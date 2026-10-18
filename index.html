@@ -315,6 +315,41 @@
             padding-bottom: 12px; 
             margin-bottom: 18px;
         }
+
+        /* Accordion Header Styling */
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 0 !important;
+            border-bottom: none !important;
+            padding-bottom: 0 !important;
+        }
+
+        .accordion-header.open {
+            border-bottom: 1px solid var(--border) !important;
+            padding-bottom: 12px !important;
+            margin-bottom: 18px !important;
+        }
+
+        .toggle-icon {
+            font-size: 12px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .accordion-header:hover .toggle-icon {
+            background: var(--primary-light);
+            color: white;
+            border-color: var(--primary-light);
+        }
         
         /* Filter-Leiste Styling */
         .filter-bar {
@@ -691,10 +726,13 @@
                 </div>
             </div>
 
-            <!-- ERWEITERTE DIAGRAMME (2x2 GRID) -->
+            <!-- AUFKLAPPBARE DIAGRAMMBOX -->
             <div class="card">
-                <h3>Leistungsentwicklung & Detaillierte Analysen</h3>
-                <div class="charts-container">
+                <h3 id="charts-accordion-header" class="accordion-header open" onclick="toggleChartsAccordion()">
+                    <span>📈 Leistungsentwicklung & Detaillierte Analysen</span>
+                    <span id="charts-toggle-icon" class="toggle-icon">Diagramme ausblenden ▲</span>
+                </h3>
+                <div id="charts-accordion-body" class="charts-container">
                     <div class="chart-card">
                         <h4 id="trend-chart-title">Trend der Runden-Gesamtergebnisse</h4>
                         <canvas id="trend-canvas" class="chart-canvas" width="450" height="200"></canvas>
@@ -810,7 +848,8 @@
                 matrix: 'front',
                 add: 'front',
                 setup: 'front'
-            }
+            },
+            chartsExpanded: true
         };
 
         window.saveToFirebase = function() {};
@@ -905,6 +944,31 @@
             return '';
         }
 
+        function toggleChartsAccordion() {
+            appState.chartsExpanded = !appState.chartsExpanded;
+            updateChartsAccordionUI();
+        }
+
+        function updateChartsAccordionUI() {
+            const body = document.getElementById('charts-accordion-body');
+            const header = document.getElementById('charts-accordion-header');
+            const icon = document.getElementById('charts-toggle-icon');
+
+            if (!body || !header || !icon) return;
+
+            if (appState.chartsExpanded) {
+                body.classList.remove('hidden');
+                header.classList.add('open');
+                icon.innerText = "Diagramme ausblenden ▲";
+                const mode = document.getElementById('global-mode-select').value;
+                renderCharts(mode);
+            } else {
+                body.classList.add('hidden');
+                header.classList.remove('open');
+                icon.innerText = "Diagramme anzeigen ▼";
+            }
+        }
+
         function switchMainTab(tabName) {
             if (appState.currentMainTab === 'setup') {
                 saveSetupQuietly();
@@ -952,7 +1016,11 @@
             const mode = document.getElementById('global-mode-select').value;
             if (appState.currentMainTab === 'leaderboard') renderLeaderboard(mode);
             else if (appState.currentMainTab === 'singles') renderSinglesTable();
-            else if (appState.currentMainTab === 'matrix') { renderMatrix(mode); renderHistory(); renderCharts(mode); }
+            else if (appState.currentMainTab === 'matrix') { 
+                renderMatrix(mode); 
+                renderHistory(); 
+                updateChartsAccordionUI();
+            }
             else if (appState.currentMainTab === 'setup') renderSetupTable();
         }
 
@@ -1307,8 +1375,10 @@
             table.innerHTML = html;
         }
 
-        /* FUNCTION: ALLE VIER LEISTUNGSENTWICKLUNGS-DIAGRAMME ZEICHNEN */
+        /* FUNCTION: DIAGRAMME ZEICHNEN */
         function renderCharts(mode) {
+            if (!appState.chartsExpanded) return;
+
             const playerId = appState.activePlayerId;
             const trendCanvas = document.getElementById('trend-canvas');
             const hcpCanvas = document.getElementById('hcp-canvas');
@@ -1339,7 +1409,7 @@
             const player = appState.players[playerId];
             const sortedRounds = [...player.rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
 
-            // 1. TREND-DIAGRAMM (Gesamtergebnisse über Zeit)
+            // 1. TREND-DIAGRAMM
             trendTitle.innerText = `Trend der Runden-Gesamtergebnisse (${mode === 'brutto' ? 'Schläge' : 'Netto-Punkte'})`;
             const trendData = sortedRounds.map(r => {
                 let sum = 0, count = 0;
@@ -1356,7 +1426,7 @@
             if (trendData.length === 0) drawEmptyChart(ctxTrend, trendCanvas.width, trendCanvas.height, "Keine verwertbaren Runden");
             else drawLineChart(ctxTrend, trendCanvas.width, trendCanvas.height, trendData, "#2d6a31", "#d4a373");
 
-            // 2. HANDICAP-VERLAUF (HCPI)
+            // 2. HANDICAP-VERLAUF
             const hcpData = sortedRounds.map(r => ({ date: r.date, val: r.hcp })).filter(item => item.val !== undefined && item.val !== null);
             if (hcpData.length === 0) drawEmptyChart(ctxHcp, hcpCanvas.width, hcpCanvas.height, "Keine HCP-Daten");
             else drawLineChart(ctxHcp, hcpCanvas.width, hcpCanvas.height, hcpData, "#0284c7", "#0ea5e9");
@@ -1379,7 +1449,7 @@
             });
             drawBarChart(ctxDist, distCanvas.width, distCanvas.height, counts);
 
-            // 4. Ø SCORE NACH LOCH-TYP (PAR 3 vs 4 vs 5)
+            // 4. Ø SCORE NACH LOCH-TYP
             let parStats = { 3: { sumDiff: 0, count: 0 }, 4: { sumDiff: 0, count: 0 }, 5: { sumDiff: 0, count: 0 } };
             sortedRounds.forEach(r => {
                 for (let i = 0; i < 18; i++) {
