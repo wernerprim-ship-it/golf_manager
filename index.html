@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eclectic Golf Manager</title>
 
-    <!-- PWA Meta-Tags & Manifest-Einbindung     -->
+    <!-- PWA Meta-Tags & Manifest-Einbindung -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,22 +14,25 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏌️</text></svg>">
 
     <style>
-	<!-- 19.10.2026     -->
-	
-     	 
-	:root {
-    --primary: #0f3822;          /* Tiefes Masters-Dunkelgrün */
-    --primary-light: #1b5e3a;    /* Frisches Fairway-Grün für Buttons */
-    --primary-dark: #082113;     /* Sehr dunkles Grün für Hintergründe */
-    --secondary: #f8fafb;        /* Sehr helles, kühles Grau für Karten */
-    --accent: #d4a373;           /* Bunker-Sand-Gold für Highlights/Aktive Tabs */
-    --accent-hover: #bc8a5c;
-    --text: #0f172a;             /* Modernes Slate-Dunkelgrau (besser als Rein-Schwarz) */
-    --text-muted: #64748b;
-    --border: #e2e8f0;
-    --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
-    --error-border: #ef4444;
-}
+        /* Stand: 19.10.2026 */
+        
+        :root {
+            --primary: #0f3822;           /* Tiefes Masters-Dunkelgrün */
+            --primary-light: #1b5e3a;     /* Frisches Fairway-Grün für Buttons */
+            --primary-dark: #082113;      /* Sehr dunkles Grün für Hintergründe */
+            --bg-main: #f8fafc;           /* Haupt-Hintergrundfarbe im Light Mode */
+            --secondary: #f8fafb;         /* Sehr helles, kühles Grau für Karten */
+            --accent: #d4a373;            /* Bunker-Sand-Gold für Highlights/Aktive Tabs */
+            --accent-hover: #bc8a5c;
+            --text: #0f172a;              /* Modernes Slate-Dunkelgrau */
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+            --error-border: #ef4444;
+            --table-even: #f8fafc;
+            --input-bg: #ffffff;
+            --chart-bg: #ffffff;
+        }
 
         /* Dark Mode Theme Overrides */
         body.dark-mode {
@@ -537,8 +540,8 @@
         }
 
         .score-field input.active-field {
-            border-color: var(--accent-gold) !important;
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.3) !important;
         }
 
         .score-field input.input-error { border: 2px solid var(--error-border) !important; }
@@ -603,7 +606,7 @@
         
         .hidden { display: none !important; }
         .text-left { text-align: left !important; }
-        .highlight-row { background-color: rgba(245, 158, 11, 0.15) !important; font-weight: 600; }
+        .highlight-row { background-color: rgba(212, 163, 115, 0.15) !important; font-weight: 600; }
         
         .delete-btn {
             color: #ef4444;
