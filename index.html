@@ -3,30 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf Manager</title>
+    <title>Eclectic Golf Manager V1.1.0 </title>
 
-    <!-- PWA Meta-Tags & Manifest-Einbindung -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ffffff">
+
+
+    <!-- PWA Meta-Tags & Manifest -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Eclectic Golf">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏌️</text></svg>">
 
+	<!-- PWA Meta Tags & Manifest -->
+	<link rel="manifest" href="manifest.json">
+	<meta name="theme-color" content="#1b263b">
+	<link rel="apple-touch-icon" href="icon-192.png">
+
+			<script>
+			  if ('serviceWorker' in navigator) {
+				window.addEventListener('load', () => {
+				  navigator.serviceWorker.register('./sw.js')
+					.then(reg => console.log('Service Worker registriert:', reg.scope))
+					.catch(err => console.error('Service Worker Fehler:', err));
+				});
+			  }
+			</script>
+
+
     <style>
+	
         :root {
             --primary: #1e5338;           /* Frisches Fairway-Dunkelgrün */
             --primary-light: #2d7a52;     /* Helles Fairway-Grün für Interaktionen */
             --primary-dark: #123524;      
             --bg-main: #f1f5f9;           /* Helles Slate-Grau für den Hintergrund */
             --secondary: #ffffff;         /* Reines Weiß für Karten & Container */
-            --accent: #10b981;            /* Strahlendes Smaragdgrün für Akzente */
+            --accent: #10b981;            /* Smaragdgrün für Akzente */
             --accent-hover: #059669;
-            --sidebar-bg: #f8fafc;        /* Helles, freundliches Menü */
+            --sidebar-bg: #f8fafc;        /* Helles Menü */
             --sidebar-text: #0f172a;
             --text: #0f172a;              /* Modernes Slate-Dunkelgrau */
             --text-muted: #64748b;
-            --border: #cbd5e1;            /* Klare, saubere Rahmen */
+            --border: #cbd5e1;            /* Klare Rahmen */
             --card-shadow: 0 4px 15px -2px rgba(15, 23, 42, 0.06);
             --error-border: #ef4444;
             --table-even: #f8fafc;
@@ -94,7 +111,6 @@
             backdrop-filter: blur(2px);
         }
         
-        /* Helles, offenes Sidebar-Design */
         .sidebar { 
             width: 320px; 
             background: var(--sidebar-bg); 
@@ -125,14 +141,37 @@
             border-bottom-color: var(--accent);
         }
 
+        .sidebar-header-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
         .sidebar h3 {
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: var(--text-muted);
-            margin-top: 10px;
-            margin-bottom: 10px;
+            margin: 0;
             font-weight: 700;
+        }
+
+        .player-count-badge {
+            background: rgba(30, 83, 56, 0.1);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(30, 83, 56, 0.2);
+        }
+
+        body.dark-mode .player-count-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border-color: rgba(16, 185, 129, 0.3);
         }
 
         .sidebar .form-group {
@@ -186,60 +225,138 @@
             background: var(--primary-light); 
         }
 
+        /* Optimierte Spielerliste */
         .player-list { 
             list-style: none; 
-            padding: 0; 
-            margin: 0 0 20px 0; 
-            flex-grow: 1; 
+            padding: 2px; 
+            margin: 0 0 16px 0; 
+            flex: 1 1 auto;
+            min-height: 140px;
+            max-height: 380px;
             overflow-y: auto; 
-            max-height: 260px; 
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .player-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .player-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .player-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
         }
 
         .player-item { 
             padding: 10px 12px; 
             background: var(--secondary); 
-            border-radius: 8px; 
+            border-radius: 10px; 
             cursor: pointer; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            transition: all 0.2s ease; 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
             border: 1px solid var(--border);
+            user-select: none;
         }
 
         .player-item:hover { 
             border-color: var(--primary);
-            transform: translateX(2px);
+            transform: translateX(3px);
         }
 
         .player-item.active { 
             background: rgba(30, 83, 56, 0.08) !important; 
             color: var(--primary) !important; 
-            border: 1px solid var(--primary);
-            font-weight: 700;
+            border: 1px solid var(--primary) !important;
+            box-shadow: 0 2px 8px rgba(30, 83, 56, 0.1);
+            font-weight: 600;
         }
 
         body.dark-mode .player-item.active {
             background: rgba(16, 185, 129, 0.15) !important;
             color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .player-info-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .player-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+
+        .player-item.active .player-avatar {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        body.dark-mode .player-item.active .player-avatar {
+            background: var(--accent);
+            color: #020617;
             border-color: var(--accent);
         }
 
+        .player-name-text {
+            font-size: 13.5px;
+            letter-spacing: -0.1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-meta-side {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
         .player-item .badge { 
-            background: var(--primary); 
-            color: #ffffff; 
-            padding: 2px 8px; 
+            background: var(--bg-main); 
+            color: var(--text-muted); 
+            padding: 3px 8px; 
             border-radius: 12px; 
             font-size: 11px; 
+            font-weight: 600;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .player-item.active .badge { 
+            background: var(--primary); 
+            color: #ffffff;
+            border-color: var(--primary);
             font-weight: 700;
         }
 
-        body.dark-mode .player-item .badge {
+        body.dark-mode .player-item.active .badge {
             background: var(--accent);
             color: #020617;
+            border-color: var(--accent);
         }
         
         .delete-player-btn {
@@ -247,16 +364,15 @@
             border: none;
             color: #ef4444;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             padding: 4px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
-            transition: all 0.2s;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            opacity: 0.7;
         }
 
-        .delete-player-btn:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
+        .player-item:hover .delete-player-btn { opacity: 1; }
+        .delete-player-btn:hover { background: rgba(239, 68, 68, 0.1); }
 
         .backup-section { 
             margin-top: auto; 
@@ -279,9 +395,7 @@
             border: 1px solid var(--border);
         }
 
-        .backup-accordion-header:hover {
-            border-color: var(--primary);
-        }
+        .backup-accordion-header:hover { border-color: var(--primary); }
 
         .backup-accordion-body {
             display: flex;
@@ -291,9 +405,7 @@
             transition: all 0.3s ease;
         }
 
-        .backup-accordion-body.hidden {
-            display: none !important;
-        }
+        .backup-accordion-body.hidden { display: none !important; }
 
         .backup-btn, .csv-btn, .csv-import-btn {
             width: 100%;
@@ -425,9 +537,7 @@
             font-weight: 700;
         }
 
-        body.dark-mode .tab-btn.active {
-            color: var(--text);
-        }
+        body.dark-mode .tab-btn.active { color: var(--text); }
         
         .sub-tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
         .sub-tab-btn { 
@@ -520,18 +630,8 @@
             border: 1px solid var(--border);
         }
 
-        .filter-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .filter-item label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 13px; font-weight: 600; color: var(--text); }
         .filter-item select, .filter-item input {
             padding: 6px 12px;
             border-radius: 6px;
@@ -554,9 +654,7 @@
             transition: background 0.2s;
         }
 
-        .btn-reset-filter:hover {
-            opacity: 0.8;
-        }
+        .btn-reset-filter:hover { opacity: 0.8; }
 
         .table-responsive {
             overflow-x: auto;
@@ -639,9 +737,7 @@
             box-shadow: 0 0 0 3px rgba(30, 83, 56, 0.15); 
         }
 
-        .score-field input.filled {
-            border-color: var(--primary);
-        }
+        .score-field input.filled { border-color: var(--primary); }
 
         .score-field input.active-field {
             border-color: var(--primary) !important;
@@ -743,9 +839,7 @@
             line-height: 1.5; 
         }
 
-        body.dark-mode .info-box {
-            color: #38bdf8;
-        }
+        body.dark-mode .info-box { color: #38bdf8; }
         
         .live-sum-box {
             background: var(--bg-main);
@@ -767,10 +861,9 @@
             margin-left: 6px;
         }
 
-        body.dark-mode .live-sum-box span {
-            color: var(--accent);
-        }
+        body.dark-mode .live-sum-box span { color: var(--accent); }
         
+        /* High-DPI Crisp Canvas Diagramm Styling */
         .charts-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -786,6 +879,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
 
         .chart-card h4 {
@@ -796,12 +890,19 @@
             text-align: center;
         }
 
-        .chart-canvas {
+        .chart-canvas-wrapper {
             width: 100%;
             height: 200px;
+            position: relative;
+        }
+
+        .chart-canvas {
+            width: 100% !important;
+            height: 100% !important;
             background: var(--chart-bg);
             border-radius: 6px;
             border: 1px solid var(--border);
+            display: block;
         }
         
         table td:nth-child(2), table th:nth-child(2) {
@@ -811,16 +912,11 @@
             z-index: 2;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
-        table th:nth-child(2) {
-            background-color: var(--bg-main);
-        }
+        table th:nth-child(2) { background-color: var(--bg-main); }
 
         @media (max-width: 900px) {
             body { flex-direction: column; }
-            
-            .mobile-menu-toggle {
-                display: block;
-            }
+            .mobile-menu-toggle { display: block; }
 
             .sidebar {
                 position: fixed;
@@ -833,16 +929,11 @@
                 box-shadow: 4px 0 25px rgba(0,0,0,0.15);
             }
 
-            .sidebar.open {
-                transform: translateX(320px);
-            }
-
-            .sidebar-overlay.active {
-                display: block;
-            }
+            .sidebar.open { transform: translateX(320px); }
+            .sidebar-overlay.active { display: block; }
 
             .sidebar h2 { font-size: 18px; }
-            .player-list { max-height: 200px; }
+            .player-list { max-height: 260px; }
             .main-content { padding: 60px 16px 16px 16px; }
             .header-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
             .tabs { gap: 4px; }
@@ -877,7 +968,10 @@
             <button class="btn-add-player" onclick="addPlayer()">Spieler hinzufügen</button>
         </div>
         
-        <h3>Spielerliste</h3>
+        <div class="sidebar-header-group">
+            <h3>Spielerliste</h3>
+            <span class="player-count-badge" id="player-count-display">0 Spieler</span>
+        </div>
         <ul class="player-list" id="sidebar-player-list"></ul>
         
         <div class="backup-section">
@@ -994,25 +1088,33 @@
 
             <div class="card">
                 <h3 id="charts-accordion-header" class="accordion-header open" onclick="toggleChartsAccordion()">
-                    <span>📈 Leistungsentwicklung & Detaillierte Analysen</span>
+                    <span>📈 Leistungsentwicklung & Detaillierte Analysen (Gestochen Scharf / Retina Ready)</span>
                     <span id="charts-toggle-icon" class="toggle-icon">Diagramme ausblenden ▲</span>
                 </h3>
                 <div id="charts-accordion-body" class="charts-container">
                     <div class="chart-card">
                         <h4 id="trend-chart-title">Trend der Runden-Gesamtergebnisse</h4>
-                        <canvas id="trend-canvas" class="chart-canvas" width="450" height="200"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="trend-canvas" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h4>Handicap-Verlauf (HCPI)</h4>
-                        <canvas id="hcp-canvas" class="chart-canvas" width="450" height="200"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="hcp-canvas" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h4>Trefferquote nach Score-Kategorien</h4>
-                        <canvas id="distribution-canvas" class="chart-canvas" width="450" height="200"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="distribution-canvas" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h4>Ø Score nach Loch-Typ (im Vergleich zu PAR)</h4>
-                        <canvas id="par-type-canvas" class="chart-canvas" width="450" height="200"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="par-type-canvas" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1390,35 +1492,46 @@
         function renderPlayerList() {
             const list = document.getElementById('sidebar-player-list');
             if (!list) return;
+            
             list.innerHTML = '';
             
             const sortedPlayers = Object.values(appState.players || {}).sort((a, b) => 
                 (a.name || '').localeCompare(b.name || '', 'de', { sensitivity: 'base' })
             );
+
+            const countBadge = document.getElementById('player-count-display');
+            if (countBadge) countBadge.innerText = `${sortedPlayers.length} Spieler`;
             
             sortedPlayers.forEach(player => {
                 const li = document.createElement('li');
-                li.className = `player-item ${player.id === appState.activePlayerId ? 'active' : ''}`;
+                const isActive = player.id === appState.activePlayerId;
+                li.className = `player-item ${isActive ? 'active' : ''}`;
                 
                 li.onclick = () => {
                     appState.activePlayerId = player.id;
                     if (player.rounds && player.rounds.length > 0) {
-                        const rHcp = document.getElementById('round-hcp');
-                        if (rHcp) rHcp.value = player.rounds[player.rounds.length - 1].hcp;
+                        const lastHcp = player.rounds[player.rounds.length - 1].hcp;
+                        const hcpInput = document.getElementById('round-hcp');
+                        if (hcpInput) hcpInput.value = lastHcp;
                     }
                     const currDisplay = document.getElementById('current-player-display');
                     if (currDisplay) currDisplay.innerText = player.name;
-                    if (window.innerWidth <= 900) toggleMobileSidebar();
+                    
+                    if (window.innerWidth <= 900 && typeof toggleMobileSidebar === 'function') {
+                        toggleMobileSidebar();
+                    }
                     updateViews();
                 };
                 
                 const roundsCount = player.rounds ? player.rounds.length : 0;
+                const initial = (player.name || '').trim().charAt(0).toUpperCase() || '🏌️';
                 
                 li.innerHTML = `
-                    <div style="display:flex; align-items:center; overflow:hidden; text-overflow:ellipsis;">
-                        <span>👤 ${escapeHTML(player.name)}</span>
+                    <div class="player-info-main">
+                        <div class="player-avatar">${escapeHTML(initial)}</div>
+                        <span class="player-name-text">${escapeHTML(player.name)}</span>
                     </div>
-                    <div style="display:flex; align-items:center;">
+                    <div class="player-meta-side">
                         <span class="badge">${roundsCount} Rds</span>
                         <button class="delete-player-btn" title="Spieler löschen" onclick="deletePlayer(event, '${escapeHTML(player.id)}')">🗑️</button>
                     </div>
@@ -1761,6 +1874,25 @@
             table.innerHTML = html;
         }
 
+        /* --- RETINA / HIGH-DPI CRISP CANVAS RENDERING HELPER --- */
+        function setupCrispCanvas(canvas) {
+            if (!canvas) return null;
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            
+            const displayWidth = rect.width || canvas.clientWidth || 400;
+            const displayHeight = rect.height || canvas.clientHeight || 200;
+
+            canvas.width = Math.round(displayWidth * dpr);
+            canvas.height = Math.round(displayHeight * dpr);
+
+            const ctx = canvas.getContext('2d');
+            ctx.resetTransform?.();
+            ctx.scale(dpr, dpr);
+            
+            return { ctx, width: displayWidth, height: displayHeight, dpr };
+        }
+
         function renderCharts(mode) {
             if (!appState.chartsExpanded) return;
 
@@ -1773,21 +1905,18 @@
             
             if (!trendCanvas || !hcpCanvas || !distCanvas || !parTypeCanvas) return;
 
-            const ctxTrend = trendCanvas.getContext('2d');
-            const ctxHcp = hcpCanvas.getContext('2d');
-            const ctxDist = distCanvas.getContext('2d');
-            const ctxParType = parTypeCanvas.getContext('2d');
-            
-            ctxTrend.clearRect(0, 0, trendCanvas.width, trendCanvas.height);
-            ctxHcp.clearRect(0, 0, hcpCanvas.width, hcpCanvas.height);
-            ctxDist.clearRect(0, 0, distCanvas.width, distCanvas.height);
-            ctxParType.clearRect(0, 0, parTypeCanvas.width, parTypeCanvas.height);
+            const trendInfo = setupCrispCanvas(trendCanvas);
+            const hcpInfo = setupCrispCanvas(hcpCanvas);
+            const distInfo = setupCrispCanvas(distCanvas);
+            const parTypeInfo = setupCrispCanvas(parTypeCanvas);
+
+            if (!trendInfo) return;
 
             if (!playerId || !appState.players[playerId] || !appState.players[playerId].rounds || appState.players[playerId].rounds.length === 0) {
-                drawEmptyChart(ctxTrend, trendCanvas.width, trendCanvas.height, "Keine Runden vorhanden");
-                drawEmptyChart(ctxHcp, hcpCanvas.width, hcpCanvas.height, "Keine Runden vorhanden");
-                drawEmptyChart(ctxDist, distCanvas.width, distCanvas.height, "Keine Runden vorhanden");
-                drawEmptyChart(ctxParType, parTypeCanvas.width, parTypeCanvas.height, "Keine Runden vorhanden");
+                drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine Runden vorhanden");
+                drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine Runden vorhanden");
+                drawEmptyChart(distInfo.ctx, distInfo.width, distInfo.height, "Keine Runden vorhanden");
+                drawEmptyChart(parTypeInfo.ctx, parTypeInfo.width, parTypeInfo.height, "Keine Runden vorhanden");
                 return;
             }
 
@@ -1808,12 +1937,12 @@
                 return { date: r.date, val: count > 0 ? sum : null };
             }).filter(item => item.val !== null);
 
-            if (trendData.length === 0) drawEmptyChart(ctxTrend, trendCanvas.width, trendCanvas.height, "Keine verwertbaren Runden");
-            else drawLineChart(ctxTrend, trendCanvas.width, trendCanvas.height, trendData, "#10b981", "#059669");
+            if (trendData.length === 0) drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine verwertbaren Runden");
+            else drawLineChart(trendInfo.ctx, trendInfo.width, trendInfo.height, trendData, "#10b981", "#059669");
 
             const hcpData = sortedRounds.map(r => ({ date: r.date, val: r.hcp })).filter(item => item.val !== undefined && item.val !== null);
-            if (hcpData.length === 0) drawEmptyChart(ctxHcp, hcpCanvas.width, hcpCanvas.height, "Keine HCP-Daten");
-            else drawLineChart(ctxHcp, hcpCanvas.width, hcpCanvas.height, hcpData, "#0284c7", "#38bdf8");
+            if (hcpData.length === 0) drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine HCP-Daten");
+            else drawLineChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, hcpData, "#0284c7", "#38bdf8");
 
             let counts = { eagle: 0, birdie: 0, par: 0, bogey: 0, dbogey: 0 };
             sortedRounds.forEach(r => {
@@ -1830,7 +1959,7 @@
                     }
                 }
             });
-            drawBarChart(ctxDist, distCanvas.width, distCanvas.height, counts);
+            drawBarChart(distInfo.ctx, distInfo.width, distInfo.height, counts);
 
             let parStats = { 3: { sumDiff: 0, count: 0 }, 4: { sumDiff: 0, count: 0 }, 5: { sumDiff: 0, count: 0 } };
             sortedRounds.forEach(r => {
@@ -1843,13 +1972,14 @@
                     }
                 }
             });
-            drawParTypeChart(ctxParType, parTypeCanvas.width, parTypeCanvas.height, parStats);
+            drawParTypeChart(parTypeInfo.ctx, parTypeInfo.width, parTypeInfo.height, parStats);
         }
 
         function drawEmptyChart(ctx, w, h, text) {
             ctx.fillStyle = appState.theme === 'dark' ? "#94a3b8" : "#64748b";
-            ctx.font = "12px sans-serif";
+            ctx.font = "12px -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
             ctx.fillText(text, w / 2, h / 2);
         }
 
@@ -1874,8 +2004,9 @@
             ctx.stroke();
 
             ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
-            ctx.font = "10px sans-serif";
+            ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
             ctx.fillText(maxVal.toString(), padding - 5, padding + 5);
             ctx.fillText(minVal.toString(), padding - 5, h - padding);
 
@@ -1902,9 +2033,10 @@
                 ctx.fill();
 
                 ctx.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
-                ctx.font = "bold 9px sans-serif";
+                ctx.font = "bold 9px -apple-system, BlinkMacSystemFont, sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText(d.val.toString(), x, y - 7);
+                ctx.textBaseline = "bottom";
+                ctx.fillText(d.val.toString(), x, y - 6);
             });
         }
 
@@ -1946,15 +2078,17 @@
 
                 if (count > 0) {
                     ctx.fillStyle = cat.color;
-                    ctx.font = "bold 10px sans-serif";
+                    ctx.font = "bold 10px -apple-system, BlinkMacSystemFont, sans-serif";
                     ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
                     ctx.fillText(count.toString(), x + barWidth / 2, y - 4);
                 }
 
                 ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
-                ctx.font = "10px sans-serif";
+                ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText(cat.label, x + barWidth / 2, h - padding + 14);
+                ctx.textBaseline = "top";
+                ctx.fillText(cat.label, x + barWidth / 2, h - padding + 6);
             });
         }
 
@@ -2008,15 +2142,17 @@
                     ctx.strokeRect(x, y, barWidth, barHeight);
 
                     ctx.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
-                    ctx.font = "bold 10px sans-serif";
+                    ctx.font = "bold 10px -apple-system, BlinkMacSystemFont, sans-serif";
                     ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
                     ctx.fillText((avg >= 0 ? "+" : "") + avg + " Schläge", x + barWidth / 2, y - 4);
                 }
 
                 ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
-                ctx.font = "10px sans-serif";
+                ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText(t.label, x + barWidth / 2, h - padding + 14);
+                ctx.textBaseline = "top";
+                ctx.fillText(t.label, x + barWidth / 2, h - padding + 6);
             });
         }
 
@@ -2756,6 +2892,13 @@
             XLSX.utils.book_append_sheet(workbook, worksheet, "Einzelergebnisse");
             XLSX.writeFile(workbook, `einzelergebnisse_${range}_${mode}.xlsx`);
         }
+
+        window.addEventListener('resize', () => {
+            if (appState.currentMainTab === 'matrix' && appState.chartsExpanded) {
+                const modeSelect = document.getElementById('global-mode-select');
+                renderCharts(modeSelect ? modeSelect.value : 'brutto');
+            }
+        });
 
         window.onload = function() {
             const roundDateInput = document.getElementById('round-date');
