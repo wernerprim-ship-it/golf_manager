@@ -799,7 +799,7 @@
     <div class="main-content">
         <div class="header-bar">
             <div>
-                <h1 id="app-title">Eclectic Golf-Turnierserie</h1>
+                <h1 id="app-title">Eclectic Golf-Turnierserie  V1.1.1</h1>
                 <div class="sync-status">
                     <span class="sync-dot"></span>
                     <span>Aktiver Spieler: <strong id="current-player-display" style="color: var(--text);">-</strong></span>
@@ -1018,25 +1018,28 @@
     </div>
 
     <script>
-        let appState = {
-            players: {},
-            courseSetup: {
-                par: Array(18).fill(4),
-                hcpIndex: [1, 18, 5, 14, 9, 10, 13, 2, 17, 4, 15, 8, 11, 12, 7, 3, 16, 6]
-            },
-            activePlayerId: null,
-            currentMainTab: 'leaderboard',
-            subTabs: {
-                leaderboard: 'all',
-                singles: 'all',
-                matrix: 'front',
-                add: 'front',
-                setup: 'front'
-            },
+	
+	
+  let appState = {
+    // ...
+    currentMainTab: 'leaderboard',
+    subTabs: {
+        leaderboard: 'all', // Vorher 'front' oder undefiniert -> nun direkt auf 'all'
+        singles: 'all',
+        matrix: 'front',
+        add: 'front',
+        setup: 'front'
+    },
+			
+			
             chartsExpanded: true
-        };
+  };
 
-        let currentFocusedHoleIndex = 0;
+   
+
+
+
+   let currentFocusedHoleIndex = 0;
         let chartPoints = [];       // Speichert Trend-Punkte für Hover-Tooltips
         let distDonutSlices = [];   // Speichert Donut-Segmente für Hover-Tooltips
 
@@ -1049,7 +1052,7 @@
             }
         }
 
-        /* RETINA CANVAS HELPER (Gestochen scharfe Diagramme) */
+        /* RETINA CANVAS HELPER   */
         function setupRetinaCanvas(canvas) {
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
@@ -2765,26 +2768,38 @@
             XLSX.writeFile(workbook, `einzelergebnisse_${range}_${mode}.xlsx`);
         }
 
-        window.onload = function() {
-            document.getElementById('round-date').value = new Date().toISOString().split('T')[0];
-            generateAddScoreInputs();
-            
-            const localData = localStorage.getItem('eclectic_golf_pro_data');
-            if (localData) {
-                try { appState = JSON.parse(localData); } 
-                catch(e) { console.error("Fehler beim Laden aus localStorage:", e); }
-            }
+    
+		
+	window.onload = function() {
+    document.getElementById('round-date').value = new Date().toISOString().split('T')[0];
+    generateAddScoreInputs();
+    
+    const localData = localStorage.getItem('eclectic_golf_pro_data');
+    if (localData) {
+        try { appState = JSON.parse(localData); } 
+        catch(e) { console.error("Fehler beim Laden aus localStorage:", e); }
+    }
 
-            if (appState.players && Object.keys(appState.players).length > 0) {
-                if (!appState.activePlayerId || !appState.players[appState.activePlayerId]) {
-                    appState.activePlayerId = Object.keys(appState.players)[0];
-                }
-            }
-            
-            initTrendChartHover();
-            initBarChartHover();
-            updateViews();
-        };
+    if (appState.players && Object.keys(appState.players).length > 0) {
+        if (!appState.activePlayerId || !appState.players[appState.activePlayerId]) {
+            appState.activePlayerId = Object.keys(appState.players)[0];
+        }
+    }
+    
+    initTrendChartHover();
+    initBarChartHover();
+
+    // --- INITIALISIERUNG & FOKUS DES LEADERBOARDS ---
+    switchSubTab('leaderboard', appState.subTabs.leaderboard || 'all');
+    
+    const leaderboardTabBtn = document.getElementById('tab-leaderboard');
+    if (leaderboardTabBtn) {
+        leaderboardTabBtn.focus(); // Setzt den Tastatur-/Systemfokus auf den Reiter
+    }
+    
+    updateViews();
+};
+		
     </script>
 
     <!-- FIREBASE CLOUD FIRESTORE INTEGRATION MIT OFFLINE PERSISTENCE -->
