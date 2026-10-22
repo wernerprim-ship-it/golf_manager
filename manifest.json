@@ -1,25 +1,18 @@
 {
   "short_name": "Eclectic Golf",
-  "name": "Eclectic Golf Score Tracker",
+  "name": "Eclectic Golf Manager",
+  "description": "Verwalte deine Eclectic-Golf-Ergebnisse offline und online.",
   "icons": [
     {
-      "src": "icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏌️</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],
   "start_url": "./index.html",
-  "background_color": "#0d1b2a",
-  "theme_color": "#1b263b",
+  "background_color": "#0f3822",
+  "theme_color": "#0f3822",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "scope": "./",
-  "description": "Verwalte und verfolge deine Eclectic-Golfergebnisse offline und synchronisiere sie live."
+  "orientation": "portrait"
 }
