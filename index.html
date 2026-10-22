@@ -1037,8 +1037,8 @@
         };
 
         let currentFocusedHoleIndex = 0;
-        let chartPoints = [];       // Speichert Trend-Punkte für Hover-Tooltips
-        let distDonutSlices = [];   // Speichert Donut-Segmente für Hover-Tooltips
+        let chartPoints = [];
+        let distDonutSlices = [];
 
         window.saveToFirebase = function() {};
 
@@ -1243,7 +1243,6 @@
                 renderHistory(); 
                 updateChartsAccordionUI();
             }
-            else if (appState.currentMainTab === 'add') generateAddScoreInputs();
             else if (appState.currentMainTab === 'setup') renderSetupTable();
         }
 
@@ -2313,11 +2312,11 @@
             }
             
             if (invalidHole !== null) {
-                const inputEl = document.getElementById(`input-hole-${invalidHole}`);
                 if (invalidHole < 9) switchSubTab('add', 'front');
                 else switchSubTab('add', 'back');
                 
                 setTimeout(() => {
+                    const inputEl = document.getElementById(`input-hole-${invalidHole}`);
                     if (inputEl) {
                         inputEl.classList.add('input-error');
                         inputEl.focus();
@@ -2344,14 +2343,7 @@
                 scores: scores 
             });
             
-            for (let i = 0; i < 18; i++) {
-                const el = document.getElementById(`input-hole-${i}`);
-                if (el) {
-                    el.value = '';
-                    el.classList.remove('filled', 'input-error', 'active-field');
-                }
-            }
-            
+            generateAddScoreInputs();
             updateLiveSum();
             saveToStorage();
             switchMainTab('matrix');
@@ -2421,6 +2413,7 @@
                     if (importedState.players && importedState.courseSetup) {
                         appState = importedState;
                         saveToStorage();
+                        generateAddScoreInputs();
                         updateViews();
                         alert("Backup erfolgreich wiederhergestellt!");
                     } else { alert("Ungültiges Dateiformat!"); }
@@ -2849,8 +2842,8 @@
           if (docSnap.exists()) {
               const data = docSnap.data();
               if (data.players && data.courseSetup) {
-                  appState.players = data.players;
-                  appState.courseSetup = data.courseSetup;
+                  appState.players = data.players || {};
+                  appState.courseSetup = data.courseSetup || appState.courseSetup;
                   
                   if (!appState.activePlayerId || !appState.players[appState.activePlayerId]) {
                       const firstPlayerId = Object.keys(appState.players)[0];
