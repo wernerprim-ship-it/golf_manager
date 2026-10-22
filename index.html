@@ -694,7 +694,7 @@
     <div class="main-content">
         <div class="header-bar">
             <div>
-                <h1 id="app-title">Eclectic Golf-Turnierserie</h1>
+                <h1 id="app-title">Eclectic Golf-Turnier.1.1 </h1>
                 <div class="sync-status">
                     <span class="sync-dot"></span>
                     <span>Aktiver Spieler: <strong id="current-player-display" style="color: var(--text);">-</strong></span>
@@ -2512,8 +2512,7 @@
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
             .then(reg => console.log('Service Worker erfolgreich registriert:', reg.scope))
-            .catch(err => console.error('Service Worker Fehler:', err));
-        });
+            .catch(err => console.error('Service Worker Fehler:', err));        });
       }
     </script>
 </body>
