@@ -799,7 +799,7 @@
     <div class="main-content">
         <div class="header-bar">
             <div>
-                <h1 id="app-title">Eclectic Golf-Turnierserie  V1.1.1</h1>
+                <h1 id="app-title">Eclectic Golf-Turnierserie</h1>
                 <div class="sync-status">
                     <span class="sync-dot"></span>
                     <span>Aktiver Spieler: <strong id="current-player-display" style="color: var(--text);">-</strong></span>
@@ -1018,28 +1018,25 @@
     </div>
 
     <script>
-	
-	
-  let appState = {
-    // ...
-    currentMainTab: 'leaderboard',
-    subTabs: {
-        leaderboard: 'all', // Vorher 'front' oder undefiniert -> nun direkt auf 'all'
-        singles: 'all',
-        matrix: 'front',
-        add: 'front',
-        setup: 'front'
-    },
-			
-			
+        let appState = {
+            players: {},
+            activePlayerId: null,
+            courseSetup: {
+                par: [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 5, 4, 4, 3, 4, 4, 5],
+                hcpIndex: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+            },
+            currentMainTab: 'leaderboard',
+            subTabs: {
+                leaderboard: 'all',
+                singles: 'all',
+                matrix: 'front',
+                add: 'front',
+                setup: 'front'
+            },
             chartsExpanded: true
-  };
+        };
 
-   
-
-
-
-   let currentFocusedHoleIndex = 0;
+        let currentFocusedHoleIndex = 0;
         let chartPoints = [];       // Speichert Trend-Punkte für Hover-Tooltips
         let distDonutSlices = [];   // Speichert Donut-Segmente für Hover-Tooltips
 
@@ -1052,7 +1049,7 @@
             }
         }
 
-        /* RETINA CANVAS HELPER   */
+        /* RETINA CANVAS HELPER */
         function setupRetinaCanvas(canvas) {
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
@@ -1246,6 +1243,7 @@
                 renderHistory(); 
                 updateChartsAccordionUI();
             }
+            else if (appState.currentMainTab === 'add') generateAddScoreInputs();
             else if (appState.currentMainTab === 'setup') renderSetupTable();
         }
 
@@ -1726,7 +1724,7 @@
             });
 
             if (showParLine) {
-                chartPoints = points; // Speichern für Hover
+                chartPoints = points;
             }
 
             if (points.length > 0 && showParLine) {
@@ -2175,6 +2173,8 @@
         function generateAddScoreInputs() {
             const frontGrid = document.getElementById('add-score-front');
             const backGrid = document.getElementById('add-score-back');
+            if (!frontGrid || !backGrid) return;
+
             frontGrid.innerHTML = '';
             backGrid.innerHTML = '';
             
@@ -2184,7 +2184,7 @@
         }
 
         function createScoreInputHTML(index) {
-            const holePar = appState.courseSetup.par[index] || 4;
+            const holePar = (appState.courseSetup && appState.courseSetup.par[index]) ? appState.courseSetup.par[index] : 4;
             return `
                 <div class="score-field">
                     <label>Loch ${index + 1} <small style="opacity:0.7;">(P:${holePar})</small></label>
@@ -2237,7 +2237,7 @@
                 input.value = '';
                 input.classList.remove('filled', 'input-error');
             } else {
-                const holePar = appState.courseSetup.par[holeIndex] || 4;
+                const holePar = (appState.courseSetup && appState.courseSetup.par[holeIndex]) ? appState.courseSetup.par[holeIndex] : 4;
                 const scoreVal = holePar + deltaOrAction;
                 input.value = scoreVal;
                 input.classList.add('filled');
@@ -2279,9 +2279,13 @@
             }
 
             const totalSum = frontSum + backSum;
-            document.getElementById('sum-front').innerText = hasFront ? frontSum : '-';
-            document.getElementById('sum-back').innerText = hasBack ? backSum : '-';
-            document.getElementById('sum-total').innerText = (hasFront || hasBack) ? totalSum : '-';
+            const sumFrontEl = document.getElementById('sum-front');
+            const sumBackEl = document.getElementById('sum-back');
+            const sumTotalEl = document.getElementById('sum-total');
+
+            if (sumFrontEl) sumFrontEl.innerText = hasFront ? frontSum : '-';
+            if (sumBackEl) sumBackEl.innerText = hasBack ? backSum : '-';
+            if (sumTotalEl) sumTotalEl.innerText = (hasFront || hasBack) ? totalSum : '-';
         }
 
         function saveRound() {
@@ -2768,38 +2772,37 @@
             XLSX.writeFile(workbook, `einzelergebnisse_${range}_${mode}.xlsx`);
         }
 
-    
-		
-	window.onload = function() {
-    document.getElementById('round-date').value = new Date().toISOString().split('T')[0];
-    generateAddScoreInputs();
-    
-    const localData = localStorage.getItem('eclectic_golf_pro_data');
-    if (localData) {
-        try { appState = JSON.parse(localData); } 
-        catch(e) { console.error("Fehler beim Laden aus localStorage:", e); }
-    }
+        window.onload = function() {
+            document.getElementById('round-date').value = new Date().toISOString().split('T')[0];
+            
+            const localData = localStorage.getItem('eclectic_golf_pro_data');
+            if (localData) {
+                try { 
+                    const loadedState = JSON.parse(localData);
+                    appState = { ...appState, ...loadedState };
+                } 
+                catch(e) { console.error("Fehler beim Laden aus localStorage:", e); }
+            }
 
-    if (appState.players && Object.keys(appState.players).length > 0) {
-        if (!appState.activePlayerId || !appState.players[appState.activePlayerId]) {
-            appState.activePlayerId = Object.keys(appState.players)[0];
-        }
-    }
-    
-    initTrendChartHover();
-    initBarChartHover();
+            if (appState.players && Object.keys(appState.players).length > 0) {
+                if (!appState.activePlayerId || !appState.players[appState.activePlayerId]) {
+                    appState.activePlayerId = Object.keys(appState.players)[0];
+                }
+            }
+            
+            generateAddScoreInputs();
+            initTrendChartHover();
+            initBarChartHover();
 
-    // --- INITIALISIERUNG & FOKUS DES LEADERBOARDS ---
-    switchSubTab('leaderboard', appState.subTabs.leaderboard || 'all');
-    
-    const leaderboardTabBtn = document.getElementById('tab-leaderboard');
-    if (leaderboardTabBtn) {
-        leaderboardTabBtn.focus(); // Setzt den Tastatur-/Systemfokus auf den Reiter
-    }
-    
-    updateViews();
-};
-		
+            switchSubTab('leaderboard', appState.subTabs.leaderboard || 'all');
+            
+            const leaderboardTabBtn = document.getElementById('tab-leaderboard');
+            if (leaderboardTabBtn) {
+                leaderboardTabBtn.focus();
+            }
+            
+            updateViews();
+        };
     </script>
 
     <!-- FIREBASE CLOUD FIRESTORE INTEGRATION MIT OFFLINE PERSISTENCE -->
