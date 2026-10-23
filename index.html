@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf Manager Pro</title>
+    <title>Eclectic Golf Manager 1.2.1</title>
 
     <!-- PWA Meta-Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -14,7 +14,6 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏌️</text></svg>">
 
     <style>
-	
         :root {
             --primary: #1e5338;           /* Frisches Fairway-Dunkelgrün */
             --primary-light: #2d7a52;     /* Helles Fairway-Grün für Interaktionen */
@@ -209,7 +208,6 @@
             background: var(--primary-light); 
         }
 
-        /* Optimierte Spielerliste */
         .player-list { 
             list-style: none; 
             padding: 2px; 
@@ -772,7 +770,7 @@
             opacity: 0.8;
         }
         
-        .btn-panel { display: flex; gap: 10px; justify-content: flex-end; }
+        .btn-panel { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
         .btn-submit { 
             background-color: var(--primary); 
             color: #ffffff; 
@@ -847,7 +845,6 @@
 
         body.dark-mode .live-sum-box span { color: var(--accent); }
         
-        /* High-DPI Crisp Canvas Diagramm Styling */
         .charts-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -926,8 +923,8 @@
             .score-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
             .score-field input { padding: 10px; font-size: 16px; }
             .live-sum-box { flex-direction: column; align-items: flex-start; gap: 8px; }
-            .btn-panel { flex-direction: column; }
-            .btn-submit { width: 100%; padding: 14px; }
+            .btn-panel { flex-direction: column; width: 100%; }
+            .btn-submit, .btn-reset-filter { width: 100%; padding: 14px; }
             .filter-bar { flex-direction: column; align-items: stretch; }
             .charts-container { grid-template-columns: 1fr; }
         }
@@ -974,6 +971,8 @@
                 
                 <button class="csv-btn" style="background:#059669 !important;" onclick="exportLeaderboardExcel()">📗 Bestenliste (Excel)</button>
                 <button class="csv-btn" onclick="exportSingleResultsExcel()">📗 Einzelergebnisse (Excel)</button>
+                
+                <button class="backup-btn" style="background:#ef4444 !important; margin-top:10px;" onclick="deleteAllRounds()">🚨 Alle Runden löschen</button>
             </div>
         </div>
     </div>
@@ -1179,6 +1178,7 @@
                 <div id="add-score-back" class="score-grid hidden"></div>
 
                 <div class="btn-panel">
+                    <button type="button" id="btn-cancel-edit" class="btn-reset-filter hidden" onclick="cancelEditRound()">Bearbeiten abbrechen</button>
                     <button class="btn-submit" onclick="saveRound()">Runde für aktiven Spieler speichern</button>
                 </div>
             </div>
@@ -1217,6 +1217,16 @@
                 .replace(/'/g, '&#039;');
         }
 
+        function escapeAttr(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
         let appState = {
             players: {},
             courseSetup: {
@@ -1238,6 +1248,7 @@
 
         let currentFocusedHoleIndex = 0;
         let isLocalSave = false;
+        let editingRoundId = null;
 
         window.saveToFirebase = function() {};
 
@@ -1643,7 +1654,7 @@
             
             let html = `<thead><tr><th>Pos</th><th class="text-left">Spieler</th>`;
             for (let i = start; i < end; i++) {
-                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${appState.courseSetup.par[i] || 4}</small></th>`;
+                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${escapeHTML(appState.courseSetup.par[i] || 4)}</small></th>`;
             }
             html += `<th>Gesamt (${mode === 'brutto' ? 'Schläge' : 'Punkte'})</th></tr></thead><tbody>`;
             
@@ -1676,17 +1687,20 @@
                     
                 for (let i = start; i < end; i++) {
                     const scoreVal = mode === 'brutto' ? rp.profile.brutto[i] : rp.profile.netto[i];
-                    const dateInfo = rp.profile.dates[i] ? `Datum: ${escapeHTML(rp.profile.dates[i])} (HCP: ${rp.profile.hcpUsed[i]})` : '';
+                    const rawDate = rp.profile.dates[i] ? String(rp.profile.dates[i]) : '';
+                    const rawHcp = rp.profile.hcpUsed[i] !== undefined ? String(rp.profile.hcpUsed[i]) : '';
+                    
+                    const dateInfo = rawDate ? escapeAttr(`Datum: ${rawDate} (HCP: ${rawHcp})`) : '';
                     const parVal = appState.courseSetup.par[i] || 4;
                     
                     if (scoreVal !== null) {
                         const colorClass = getScoreColorClass(scoreVal, parVal, mode);
-                        html += `<td class="best-score" data-tooltip="${dateInfo}"><span class="${colorClass}">${scoreVal}</span></td>`;
+                        html += `<td class="best-score" data-tooltip="${dateInfo}"><span class="${escapeHTML(colorClass)}">${escapeHTML(scoreVal)}</span></td>`;
                     } else {
                         html += `<td>-</td>`;
                     }
                 }
-                html += `<td><strong>${totalDisplay}</strong></td></tr>`;
+                html += `<td><strong>${escapeHTML(totalDisplay)}</strong></td></tr>`;
             });
             
             html += `</tbody>`;
@@ -1760,7 +1774,7 @@
                 html += `<tr class="${isCurrent}">
                     <td class="text-left"><strong>${escapeHTML(item.playerName)}</strong></td>
                     <td><small>${escapeHTML(r.date)}</small></td>
-                    <td><small>${r.hcp}</small></td>`;
+                    <td><small>${escapeHTML(r.hcp)}</small></td>`;
 
                 for (let i = start; i < end; i++) {
                     const rawScore = r.scores ? r.scores[i] : null;
@@ -1769,7 +1783,7 @@
                         const parVal = appState.courseSetup.par[i] || 4;
                         const colorClass = getScoreColorClass(cellVal, parVal, mode);
                         
-                        html += `<td><span class="${colorClass}">${cellVal}</span></td>`;
+                        html += `<td><span class="${escapeHTML(colorClass)}">${escapeHTML(cellVal)}</span></td>`;
                         sum += cellVal;
                         hasData = true;
                     } else {
@@ -1777,7 +1791,7 @@
                     }
                 }
 
-                html += `<td><strong>${hasData ? sum : '-'}</strong></td></tr>`;
+                html += `<td><strong>${hasData ? escapeHTML(sum) : '-'}</strong></td></tr>`;
             });
 
             html += `</tbody>`;
@@ -1809,14 +1823,14 @@
             html += `<tr><td class="text-left"><strong>Platz-PAR</strong></td>`;
             for (let i = start; i < end; i++) {
                 const parVal = appState.courseSetup.par[i] || 4;
-                html += `<td>${parVal}</td>`;
+                html += `<td>${escapeHTML(parVal)}</td>`;
                 parSum += parVal;
             }
-            html += `<td><strong>${parSum}</strong></td></tr>`;
+            html += `<td><strong>${escapeHTML(parSum)}</strong></td></tr>`;
             
             html += `<tr><td class="text-left"><strong>HCPI-Lochindex</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td>${appState.courseSetup.hcpIndex[i] || 18}</td>`;
+                html += `<td>${escapeHTML(appState.courseSetup.hcpIndex[i] || 18)}</td>`;
             }
             html += `<td>-</td></tr>`;
             
@@ -1824,20 +1838,20 @@
                 player.rounds.forEach(round => {
                     let roundSum = 0;
                     let hasData = false;
-                    html += `<tr><td class="text-left"><small>${escapeHTML(round.date)} (HCP:${round.hcp})</small></td>`;
+                    html += `<tr><td class="text-left"><small>${escapeHTML(round.date)} (HCP:${escapeHTML(round.hcp)})</small></td>`;
                     for (let i = start; i < end; i++) {
                         const rawScore = round.scores ? round.scores[i] : null;
                         if (rawScore) {
                             const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, round.hcp);
                             const isBest = (mode === 'brutto' && rawScore === profile.brutto[i]) || (mode === 'netto' && cellVal === profile.netto[i]);
-                            html += `<td class="${isBest ? 'best-score' : ''}">${cellVal}</td>`;
+                            html += `<td class="${isBest ? 'best-score' : ''}">${escapeHTML(cellVal)}</td>`;
                             roundSum += cellVal;
                             hasData = true;
                         } else {
                             html += `<td>-</td>`;
                         }
                     }
-                    html += `<td><strong>${hasData ? roundSum : '-'}</strong></td></tr>`;
+                    html += `<td><strong>${hasData ? escapeHTML(roundSum) : '-'}</strong></td></tr>`;
                 });
             }
             
@@ -1847,14 +1861,14 @@
             for (let i = start; i < end; i++) {
                 const ecVal = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
                 if (ecVal !== null) {
-                    html += `<td>${ecVal}</td>`;
+                    html += `<td>${escapeHTML(ecVal)}</td>`;
                     eclecticSum += ecVal;
                     hasEclectic = true;
                 } else {
                     html += `<td>-</td>`;
                 }
             }
-            html += `<td><strong>${hasEclectic ? eclecticSum : '-'}</strong></td></tr></tbody>`;
+            html += `<td><strong>${hasEclectic ? escapeHTML(eclecticSum) : '-'}</strong></td></tr></tbody>`;
             table.innerHTML = html;
         }
 
@@ -2162,15 +2176,81 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${escapeHTML(round.date)}</strong></td>
-                    <td>HCPI: ${round.hcp}</td>
+                    <td>HCPI: ${escapeHTML(round.hcp)}</td>
                     <td><small>${escapeHTML(round.type || '18-Loch')}</small></td>
-                    <td>${frontSum > 0 ? frontSum : '-'}</td>
-                    <td>${backSum > 0 ? backSum : '-'}</td>
-                    <td><strong>${totalSum > 0 ? totalSum : '-'}</strong></td>
-                    <td><button class="delete-btn" title="Runde löschen" onclick="deleteRound('${escapeHTML(round.id)}')">🗑️ Löschen</button></td>
+                    <td>${frontSum > 0 ? escapeHTML(frontSum) : '-'}</td>
+                    <td>${backSum > 0 ? escapeHTML(backSum) : '-'}</td>
+                    <td><strong>${totalSum > 0 ? escapeHTML(totalSum) : '-'}</strong></td>
+                    <td>
+                        <button class="sub-tab-btn" style="padding: 4px 8px; font-size: 11px;" title="Runde bearbeiten" onclick="editRound('${escapeHTML(round.id)}')">✏️ Bearbeiten</button>
+                        <button class="delete-btn" title="Runde löschen" onclick="deleteRound('${escapeHTML(round.id)}')">🗑️ Löschen</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function editRound(roundId) {
+            const player = appState.players[appState.activePlayerId];
+            if (!player || !player.rounds) return;
+
+            const round = player.rounds.find(r => r.id === roundId);
+            if (!round) return;
+
+            editingRoundId = roundId;
+
+            const dateEl = document.getElementById('round-date');
+            const hcpEl = document.getElementById('round-hcp');
+            if (dateEl) dateEl.value = round.date;
+            if (hcpEl) hcpEl.value = round.hcp;
+
+            for (let i = 0; i < 18; i++) {
+                const inputEl = document.getElementById(`input-hole-${i}`);
+                if (inputEl) {
+                    const scoreVal = round.scores ? round.scores[i] : null;
+                    if (scoreVal !== null && scoreVal !== undefined && scoreVal > 0) {
+                        inputEl.value = scoreVal;
+                        inputEl.classList.add('filled');
+                    } else {
+                        inputEl.value = '';
+                        inputEl.classList.remove('filled');
+                    }
+                }
+            }
+
+            updateLiveSum();
+            switchMainTab('add');
+
+            const submitBtn = document.querySelector('#view-add .btn-submit');
+            if (submitBtn) submitBtn.innerText = "Änderungen speichern";
+
+            const cancelBtn = document.getElementById('btn-cancel-edit');
+            if (cancelBtn) cancelBtn.classList.remove('hidden');
+        }
+
+        function cancelEditRound() {
+            editingRoundId = null;
+
+            const roundDateInput = document.getElementById('round-date');
+            if (roundDateInput) {
+                roundDateInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            for (let i = 0; i < 18; i++) {
+                const el = document.getElementById(`input-hole-${i}`);
+                if (el) {
+                    el.value = '';
+                    el.classList.remove('filled', 'input-error', 'active-field');
+                }
+            }
+
+            const submitBtn = document.querySelector('#view-add .btn-submit');
+            if (submitBtn) submitBtn.innerText = "Runde für aktiven Spieler speichern";
+
+            const cancelBtn = document.getElementById('btn-cancel-edit');
+            if (cancelBtn) cancelBtn.classList.add('hidden');
+
+            updateLiveSum();
         }
 
         function deleteRound(roundId) {
@@ -2180,6 +2260,37 @@
                 player.rounds = player.rounds.filter(r => r.id !== roundId);
                 saveToStorage();
                 updateViews();
+            }
+        }
+
+        function deleteAllRounds() {
+            const firstConfirm = confirm(
+                "🚨 ACHTUNG: Möchten Sie WIRKLICH ALLE eingetragenen Runden ALLER Spieler unwiderruflich löschen?\n\nSpielerprofile und das Platz-Setup bleiben erhalten."
+            );
+
+            if (!firstConfirm) return;
+
+            const userInput = prompt(
+                "Um das Löschen ALLER Runden zu bestätigen, geben Sie bitte das Wort 'LÖSCHEN' in Großbuchstaben ein:"
+            );
+
+            if (userInput === "LÖSCHEN") {
+                Object.keys(appState.players).forEach(playerId => {
+                    if (appState.players[playerId]) {
+                        appState.players[playerId].rounds = [];
+                    }
+                });
+
+                if (typeof cancelEditRound === 'function') {
+                    cancelEditRound();
+                }
+
+                saveToStorage();
+                updateViews();
+
+                alert("✅ Alle Runden wurden erfolgreich gelöscht.");
+            } else if (userInput !== null) {
+                alert("❌ Bestätigung fehlgeschlagen. Es wurden keine Runden gelöscht.");
             }
         }
 
@@ -2204,14 +2315,14 @@
             const holePar = appState.courseSetup.par[index] || 4;
             return `
                 <div class="score-field">
-                    <label>Loch ${index + 1} <small style="opacity:0.7;">(P:${holePar})</small></label>
+                    <label>Loch ${index + 1} <small style="opacity:0.7;">(P:${escapeHTML(holePar)})</small></label>
                     <input type="number" 
                            id="input-hole-${index}" 
                            min="1" 
                            max="15" 
                            inputmode="numeric" 
                            pattern="[0-9]*" 
-                           placeholder="${holePar}" 
+                           placeholder="${escapeHTML(holePar)}" 
                            onfocus="setActiveHoleIndex(${index})"
                            oninput="handleScoreInput(event, ${index})">
                 </div>`;
@@ -2396,23 +2507,28 @@
                 appState.players[playerId].rounds = [];
             }
             
-            appState.players[playerId].rounds.push({ 
-                id: 'r_' + Date.now(), 
-                date: date, 
-                hcp: hcp, 
-                type: roundType,
-                scores: scores 
-            });
-            
-            for (let i = 0; i < 18; i++) {
-                const el = document.getElementById(`input-hole-${i}`);
-                if (el) {
-                    el.value = '';
-                    el.classList.remove('filled', 'input-error', 'active-field');
+            if (editingRoundId) {
+                const roundIdx = appState.players[playerId].rounds.findIndex(r => r.id === editingRoundId);
+                if (roundIdx !== -1) {
+                    appState.players[playerId].rounds[roundIdx] = {
+                        id: editingRoundId,
+                        date: date,
+                        hcp: hcp,
+                        type: roundType,
+                        scores: scores
+                    };
                 }
+            } else {
+                appState.players[playerId].rounds.push({ 
+                    id: 'r_' + Date.now(), 
+                    date: date, 
+                    hcp: hcp, 
+                    type: roundType,
+                    scores: scores 
+                });
             }
-            
-            updateLiveSum();
+
+            cancelEditRound();
             saveToStorage();
             switchMainTab('matrix');
         }
@@ -2428,11 +2544,11 @@
             for (let i = start; i < end; i++) { html += `<th>Loch ${i+1}</th>`; }
             html += `</tr></thead><tbody><tr><td class="text-left"><strong>PAR-Vorgabe</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td><input type="number" id="setup-par-${i}" value="${appState.courseSetup.par[i] || 4}" min="3" max="6" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
+                html += `<td><input type="number" id="setup-par-${i}" value="${escapeHTML(appState.courseSetup.par[i] || 4)}" min="3" max="6" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
             }
             html += `</tr><tr><td class="text-left"><strong>HCPI-Schwierigkeitsindex (1-18)</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td><input type="number" id="setup-hcpi-${i}" value="${appState.courseSetup.hcpIndex[i] || 18}" min="1" max="18" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
+                html += `<td><input type="number" id="setup-hcpi-${i}" value="${escapeHTML(appState.courseSetup.hcpIndex[i] || 18)}" min="1" max="18" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
             }
             html += `</tr></tbody>`;
             table.innerHTML = html;
