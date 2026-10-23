@@ -3,33 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf Manager</title>
+    <title>Eclectic Golf Manager Pro</title>
 
-    <!-- PWA Meta-Tags & Manifest-Einbindung -->
+    <!-- PWA Meta-Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Eclectic Golf">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏌️</text></svg>">
 
     <style>
+	
         :root {
-            --primary: #0f3822;           /* Tiefes Masters-Dunkelgrün */
-            --primary-light: #1b5e3a;     /* Frisches Fairway-Grün für Buttons */
-            --primary-dark: #082113;      /* Sehr dunkles Grün für Hintergründe */
-            --bg-main: #f8fafc;           /* Haupt-Hintergrundfarbe */
-            --secondary: #ffffff;         /* Sehr helles Grau/Weiß für Karten */
-            --accent: #d4a373;            /* Bunker-Sand-Gold für Highlights/Aktive Tabs */
-            --accent-hover: #bc8a5c;
+            --primary: #1e5338;           /* Frisches Fairway-Dunkelgrün */
+            --primary-light: #2d7a52;     /* Helles Fairway-Grün für Interaktionen */
+            --primary-dark: #123524;      
+            --bg-main: #f1f5f9;           /* Helles Slate-Grau für den Hintergrund */
+            --secondary: #ffffff;         /* Reines Weiß für Karten & Container */
+            --accent: #10b981;            /* Smaragdgrün für Akzente */
+            --accent-hover: #059669;
+            --sidebar-bg: #f8fafc;        /* Helles Menü */
+            --sidebar-text: #0f172a;
             --text: #0f172a;              /* Modernes Slate-Dunkelgrau */
             --text-muted: #64748b;
-            --border: #e2e8f0;
-            --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+            --border: #cbd5e1;            /* Klare Rahmen */
+            --card-shadow: 0 4px 15px -2px rgba(15, 23, 42, 0.06);
             --error-border: #ef4444;
             --table-even: #f8fafc;
             --input-bg: #ffffff;
             --chart-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --primary: #10b981;
+            --primary-light: #34d399;
+            --bg-main: #0b0f19;
+            --secondary: #1e293b;
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #f1f5f9;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+            --table-even: #182232;
+            --input-bg: #0f172a;
+            --chart-bg: #0f172a;
         }
 
         * { 
@@ -44,9 +63,9 @@
             color: var(--text); 
             display: flex; 
             min-height: 100vh; 
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Mobil-Menü Button & Overlay */
         .mobile-menu-toggle {
             display: none;
             position: fixed;
@@ -71,51 +90,80 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.4);
             z-index: 9;
             backdrop-filter: blur(2px);
         }
         
-        /* Sidebar */
         .sidebar { 
             width: 320px; 
-            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%); 
-            color: #f8fafc; 
+            background: var(--sidebar-bg); 
+            color: var(--sidebar-text); 
             padding: 24px 18px; 
             display: flex; 
             flex-direction: column; 
-            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15); 
+            border-right: 1px solid var(--border);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.03); 
             z-index: 10;
         }
 
         .sidebar h2 { 
             margin: 0 0 20px 0; 
-            border-bottom: 2px solid var(--accent); 
+            border-bottom: 2px solid var(--primary); 
             padding-bottom: 12px; 
             font-size: 20px; 
             font-weight: 700;
+            color: var(--primary);
             letter-spacing: -0.3px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
+        body.dark-mode .sidebar h2 {
+            color: var(--text);
+            border-bottom-color: var(--accent);
+        }
+
+        .sidebar-header-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
         .sidebar h3 {
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            color: #94a3b8;
-            margin-top: 10px;
-            margin-bottom: 10px;
+            color: var(--text-muted);
+            margin: 0;
             font-weight: 700;
+        }
+
+        .player-count-badge {
+            background: rgba(30, 83, 56, 0.1);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(30, 83, 56, 0.2);
+        }
+
+        body.dark-mode .player-count-badge {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border-color: rgba(16, 185, 129, 0.3);
         }
 
         .sidebar .form-group {
             margin-bottom: 16px;
-            background: rgba(255, 255, 255, 0.04);
+            background: var(--secondary);
             padding: 12px;
             border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
             display: flex;
             flex-direction: column;
         }
@@ -124,29 +172,29 @@
             font-size: 11px;
             font-weight: 700;
             margin-bottom: 6px;
-            color: #cbd5e1;
+            color: var(--text-muted);
         }
 
         .sidebar input, .sidebar select { 
             padding: 10px 12px; 
             border-radius: 6px; 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            background: rgba(15, 23, 42, 0.6);
-            color: #ffffff;
+            border: 1px solid var(--border); 
+            background: var(--input-bg);
+            color: var(--text);
             font-size: 13px; 
             outline: none;
             transition: border-color 0.2s ease;
         }
 
-        .sidebar input::placeholder { color: #64748b; }
+        .sidebar input::placeholder { color: var(--text-muted); }
         .sidebar input:focus { 
-            border-color: var(--accent); 
-            box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.2);
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 2px rgba(30, 83, 56, 0.15);
         }
 
         .sidebar button.btn-add-player { 
-            background: var(--accent); 
-            color: #020617; 
+            background: var(--primary); 
+            color: #ffffff; 
             font-weight: 700; 
             border: none;
             padding: 10px;
@@ -158,75 +206,161 @@
         }
 
         .sidebar button.btn-add-player:hover { 
-            background: var(--accent-hover); 
-            color: #ffffff; 
+            background: var(--primary-light); 
         }
 
+        /* Optimierte Spielerliste */
         .player-list { 
             list-style: none; 
-            padding: 0; 
-            margin: 0 0 20px 0; 
-            flex-grow: 1; 
+            padding: 2px; 
+            margin: 0 0 16px 0; 
+            flex: 1 1 auto;
+            min-height: 140px;
+            max-height: 380px;
             overflow-y: auto; 
-            max-height: 260px; 
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .player-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .player-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .player-list::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
         }
 
         .player-item { 
             padding: 10px 12px; 
-            background: rgba(255, 255, 255, 0.05); 
-            border-radius: 8px; 
+            background: var(--secondary); 
+            border-radius: 10px; 
             cursor: pointer; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            transition: all 0.2s ease; 
-            border: 1px solid transparent;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            border: 1px solid var(--border);
+            user-select: none;
         }
 
         .player-item:hover { 
-            background: rgba(255, 255, 255, 0.1); 
-            transform: translateX(2px);
+            border-color: var(--primary);
+            transform: translateX(3px);
         }
 
         .player-item.active { 
-            background: rgba(212, 163, 115, 0.15) !important; 
-            color: #ffffff !important; 
-            border: 1px solid var(--accent);
+            background: rgba(30, 83, 56, 0.08) !important; 
+            color: var(--primary) !important; 
+            border: 1px solid var(--primary) !important;
+            box-shadow: 0 2px 8px rgba(30, 83, 56, 0.1);
             font-weight: 600;
         }
 
+        body.dark-mode .player-item.active {
+            background: rgba(16, 185, 129, 0.15) !important;
+            color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .player-info-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .player-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+        }
+
+        .player-item.active .player-avatar {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        body.dark-mode .player-item.active .player-avatar {
+            background: var(--accent);
+            color: #020617;
+            border-color: var(--accent);
+        }
+
+        .player-name-text {
+            font-size: 13.5px;
+            letter-spacing: -0.1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-meta-side {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
         .player-item .badge { 
-            background: var(--accent); 
-            color: #020617; 
-            padding: 2px 8px; 
+            background: var(--bg-main); 
+            color: var(--text-muted); 
+            padding: 3px 8px; 
             border-radius: 12px; 
             font-size: 11px; 
+            font-weight: 600;
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+
+        .player-item.active .badge { 
+            background: var(--primary); 
+            color: #ffffff;
+            border-color: var(--primary);
             font-weight: 700;
+        }
+
+        body.dark-mode .player-item.active .badge {
+            background: var(--accent);
+            color: #020617;
+            border-color: var(--accent);
         }
         
         .delete-player-btn {
             background: transparent;
             border: none;
-            color: #fca5a5;
+            color: #ef4444;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             padding: 4px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
-            transition: all 0.2s;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            opacity: 0.7;
         }
 
-        .delete-player-btn:hover {
-            color: #ef4444;
-            background: rgba(255,255,255,0.1);
-        }
+        .player-item:hover .delete-player-btn { opacity: 1; }
+        .delete-player-btn:hover { background: rgba(239, 68, 68, 0.1); }
 
         .backup-section { 
             margin-top: auto; 
-            border-top: 1px solid rgba(255, 255, 255, 0.12); 
+            border-top: 1px solid var(--border); 
             padding-top: 12px; 
         }
 
@@ -235,20 +369,17 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 12px;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--secondary);
             border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
             font-weight: 600;
-            color: #cbd5e1;
+            color: var(--text);
             transition: all 0.2s ease;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border);
         }
 
-        .backup-accordion-header:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-        }
+        .backup-accordion-header:hover { border-color: var(--primary); }
 
         .backup-accordion-body {
             display: flex;
@@ -258,9 +389,7 @@
             transition: all 0.3s ease;
         }
 
-        .backup-accordion-body.hidden {
-            display: none !important;
-        }
+        .backup-accordion-body.hidden { display: none !important; }
 
         .backup-btn, .csv-btn, .csv-import-btn {
             width: 100%;
@@ -277,10 +406,10 @@
             transition: opacity 0.2s ease;
         }
 
-        .backup-btn { background: #334155 !important; color: white !important; }
+        .backup-btn { background: #475569 !important; color: white !important; }
         .csv-btn { background: #0284c7 !important; color: white !important; }
         .csv-import-btn { background: #ea580c !important; color: white !important; }
-        .backup-section button:hover { opacity: 0.85; }
+        .backup-section button:hover { opacity: 0.88; }
         
         .main-content { 
             flex-grow: 1; 
@@ -300,6 +429,7 @@
             border-radius: 12px; 
             box-shadow: var(--card-shadow); 
             border: 1px solid var(--border);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .header-bar h1 { margin: 0; color: var(--text); font-size: 22px; font-weight: 700; }
@@ -317,8 +447,12 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background-color: var(--accent);
+            background-color: #94a3b8;
+            transition: background-color 0.3s ease;
         }
+
+        .sync-dot.online { background-color: #10b981; }
+        .sync-dot.offline { background-color: #ef4444; }
 
         .controls { display: flex; gap: 15px; align-items: center; }
         .controls select { 
@@ -332,7 +466,27 @@
             outline: none;
         }
 
-        .controls select:focus { border-color: var(--accent); }
+        .controls select:focus { border-color: var(--primary); }
+
+        .theme-toggle-btn {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--primary);
+            background: var(--secondary);
+        }
         
         .tabs { 
             display: flex; 
@@ -359,13 +513,15 @@
 
         .tab-btn.active { 
             background: var(--secondary); 
-            color: var(--text); 
+            color: var(--primary); 
             border: 1px solid var(--border); 
             border-bottom: 2px solid var(--secondary); 
             margin-bottom: -1px; 
             box-shadow: 0 -2px 5px rgba(0,0,0,0.02);
             font-weight: 700;
         }
+
+        body.dark-mode .tab-btn.active { color: var(--text); }
         
         .sub-tabs { display: flex; gap: 8px; margin-bottom: 18px; flex-wrap: wrap; }
         .sub-tab-btn { 
@@ -386,6 +542,11 @@
             color: white; 
             border-color: var(--primary); 
         }
+        body.dark-mode .sub-tab-btn.active {
+            background: var(--accent);
+            color: #020617;
+            border-color: var(--accent);
+        }
         
         .card { 
             background: var(--secondary); 
@@ -394,6 +555,7 @@
             box-shadow: var(--card-shadow); 
             margin-bottom: 24px; 
             border: 1px solid var(--border);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .card h3 { 
@@ -452,18 +614,8 @@
             border: 1px solid var(--border);
         }
 
-        .filter-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .filter-item label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
+        .filter-item { display: flex; align-items: center; gap: 8px; }
+        .filter-item label { font-size: 13px; font-weight: 600; color: var(--text); }
         .filter-item select, .filter-item input {
             padding: 6px 12px;
             border-radius: 6px;
@@ -505,6 +657,10 @@
             font-weight: 700; 
             position: relative; 
         }
+        body.dark-mode .best-score {
+            background-color: #064e3b !important;
+            color: #a7f3d0 !important;
+        }
 
         .best-score:hover::after {
             content: attr(data-tooltip);
@@ -528,10 +684,98 @@
         .score-bogey  { background-color: #ffedd5 !important; color: #c2410c !important; }
         .score-dbogey { background-color: #fee2e2 !important; color: #b91c1c !important; }
 
+        body.dark-mode .score-eagle  { background-color: #713f12 !important; color: #fef08a !important; }
+        body.dark-mode .score-birdie { background-color: #075985 !important; color: #bae6fd !important; }
+        body.dark-mode .score-par    { background-color: #334155 !important; color: #f1f5f9 !important; }
+        body.dark-mode .score-bogey  { background-color: #9a3412 !important; color: #ffedd5 !important; }
+        body.dark-mode .score-dbogey { background-color: #991b1b !important; color: #fee2e2 !important; }
+        
+        .score-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 10px; margin-bottom: 20px; }
+        .score-field { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            background: var(--bg-main); 
+            padding: 10px 6px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border);
+        }
+
+        .score-field label { font-size: 11px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+        .score-field input { 
+            width: 100%; 
+            padding: 10px 4px; 
+            text-align: center; 
+            border: 2px solid var(--border); 
+            border-radius: 8px; 
+            font-size: 18px; 
+            font-weight: 700; 
+            outline: none;
+            background: var(--input-bg);
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+
+        .score-field input:focus { 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 3px rgba(30, 83, 56, 0.15); 
+        }
+
+        .score-field input.filled { border-color: var(--primary); }
+
+        .score-field input.active-field {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(30, 83, 56, 0.2) !important;
+        }
+
+        .score-field input.input-error { border: 2px solid var(--error-border) !important; }
+
+        .quick-score-bar {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            background: var(--secondary);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: var(--card-shadow);
+            flex-wrap: wrap;
+        }
+
+        .quick-score-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--bg-main);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quick-score-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .quick-score-btn small {
+            font-size: 10px;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+        
         .btn-panel { display: flex; gap: 10px; justify-content: flex-end; }
         .btn-submit { 
-            background-color: var(--accent); 
-            color: #020617; 
+            background-color: var(--primary); 
+            color: #ffffff; 
             border: none; 
             padding: 12px 24px; 
             border-radius: 8px; 
@@ -541,17 +785,17 @@
             transition: background-color 0.2s;
         }
 
-        .btn-submit:hover { background-color: var(--accent-hover); color: white; }
+        .btn-submit:hover { background-color: var(--primary-light); }
         
         .hidden { display: none !important; }
         .text-left { text-align: left !important; }
-        .highlight-row { background-color: rgba(212, 163, 115, 0.15) !important; font-weight: 600; }
+        .highlight-row { background-color: rgba(30, 83, 56, 0.08) !important; font-weight: 600; }
         
         .delete-btn {
             color: #ef4444;
             cursor: pointer;
             border: 1px solid #fca5a5;
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.08);
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 12px;
@@ -569,16 +813,41 @@
         }
         
         .info-box { 
-            background-color: rgba(2, 132, 199, 0.1); 
+            background-color: rgba(2, 132, 199, 0.08); 
             border-left: 4px solid #0284c7; 
-            color: #0284c7; 
+            color: #0369a1; 
             padding: 14px 16px; 
             margin-bottom: 20px; 
             border-radius: 0 8px 8px 0; 
             font-size: 13px; 
             line-height: 1.5; 
         }
+
+        body.dark-mode .info-box { color: #38bdf8; }
         
+        .live-sum-box {
+            background: var(--bg-main);
+            padding: 14px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .live-sum-box span {
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        body.dark-mode .live-sum-box span { color: var(--accent); }
+        
+        /* High-DPI Crisp Canvas Diagramm Styling */
         .charts-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -594,6 +863,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
 
         .chart-card h4 {
@@ -604,12 +874,19 @@
             text-align: center;
         }
 
-        .chart-canvas {
+        .chart-canvas-wrapper {
             width: 100%;
             height: 200px;
+            position: relative;
+        }
+
+        .chart-canvas {
+            width: 100% !important;
+            height: 100% !important;
             background: var(--chart-bg);
             border-radius: 6px;
             border: 1px solid var(--border);
+            display: block;
         }
         
         table td:nth-child(2), table th:nth-child(2) {
@@ -620,57 +897,6 @@
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
         }
         table th:nth-child(2) { background-color: var(--bg-main); }
-
-        .entry-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .score-inputs-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .score-input-card {
-            background: var(--bg-main);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .score-input-card label {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .score-input-card span {
-            font-size: 10px;
-            color: var(--text-muted);
-        }
-
-        .score-input-card input {
-            width: 100%;
-            text-align: center;
-            padding: 6px;
-            border-radius: 4px;
-            border: 1px solid var(--border);
-            font-weight: 700;
-            font-size: 14px;
-        }
-
-        .score-input-card.disabled {
-            opacity: 0.4;
-            background: #e2e8f0;
-        }
 
         @media (max-width: 900px) {
             body { flex-direction: column; }
@@ -684,23 +910,26 @@
                 width: 280px;
                 z-index: 10;
                 transition: transform 0.3s ease-in-out;
-                box-shadow: 4px 0 25px rgba(0,0,0,0.3);
+                box-shadow: 4px 0 25px rgba(0,0,0,0.15);
             }
 
             .sidebar.open { transform: translateX(320px); }
             .sidebar-overlay.active { display: block; }
+
             .sidebar h2 { font-size: 18px; }
-            .player-list { max-height: 200px; }
+            .player-list { max-height: 260px; }
             .main-content { padding: 60px 16px 16px 16px; }
             .header-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
             .tabs { gap: 4px; }
             .tab-btn { flex: 1 1 calc(50% - 4px); padding: 8px 10px; font-size: 12px; text-align: center; }
             .tab-btn.active { border-bottom: 1px solid var(--border); }
+            .score-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .score-field input { padding: 10px; font-size: 16px; }
+            .live-sum-box { flex-direction: column; align-items: flex-start; gap: 8px; }
             .btn-panel { flex-direction: column; }
             .btn-submit { width: 100%; padding: 14px; }
             .filter-bar { flex-direction: column; align-items: stretch; }
             .charts-container { grid-template-columns: 1fr; }
-            .entry-grid { grid-template-columns: 1fr; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>    
@@ -708,11 +937,14 @@
 
 <body>
 
-    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">☰ Menü</button>
+    <button class="mobile-menu-toggle" onclick="toggleMobileSidebar()">
+        ☰ Menü
+    </button>
+
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
 
     <div class="sidebar" id="app-sidebar">
-        <h2>🏌️ Eclectic Manager  1.2</h2>
+        <h2>🏌️ Eclectic Manager</h2>
         
         <div class="form-group">
             <label for="new-player-name">NEUEN SPIELER HINZUFÜGEN:</label>
@@ -720,7 +952,10 @@
             <button class="btn-add-player" onclick="addPlayer()">Spieler hinzufügen</button>
         </div>
         
-        <h3>Spielerliste</h3>
+        <div class="sidebar-header-group">
+            <h3>Spielerliste</h3>
+            <span class="player-count-badge" id="player-count-display">0 Spieler</span>
+        </div>
         <ul class="player-list" id="sidebar-player-list"></ul>
         
         <div class="backup-section">
@@ -744,15 +979,19 @@
     </div>
 
     <div class="main-content">
+        
         <div class="header-bar">
             <div>
                 <h1 id="app-title">Eclectic Golf-Turnierserie</h1>
                 <div class="sync-status">
-                    <span class="sync-dot"></span>
+                    <span class="sync-dot" id="sync-dot"></span>
                     <span>Aktiver Spieler: <strong id="current-player-display" style="color: var(--text);">-</strong></span>
                 </div>
             </div>
             <div class="controls">
+                <button class="theme-toggle-btn" onclick="toggleTheme()">
+                    <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+                </button>
                 <div style="display:flex; flex-direction:column;">
                     <label style="font-size:11px; font-weight:700; margin-bottom:4px; color:var(--text-muted);">Wertungsmodus:</label>
                     <select id="global-mode-select" onchange="updateViews()">
@@ -767,11 +1006,10 @@
             <button class="tab-btn active" id="tab-leaderboard" onclick="switchMainTab('leaderboard')">🏆 Gruppen-Leaderboard</button>
             <button class="tab-btn" id="tab-singles" onclick="switchMainTab('singles')">📋 Einzelergebnisse</button>
             <button class="tab-btn" id="tab-matrix" onclick="switchMainTab('matrix')">📊 Einzelspieler-Matrix</button>
-            <button class="tab-btn" id="tab-entry" onclick="switchMainTab('entry')">➕ Runde erfassen</button>
+            <button class="tab-btn" id="tab-add" onclick="switchMainTab('add')">📝 Runde eintragen</button>
             <button class="tab-btn" id="tab-setup" onclick="switchMainTab('setup')">⚙️ Platz-Setup (PAR/HCPI)</button>
         </div>
 
-        <!-- 1. TAB: GRUPPEN-LEADERBOARD -->
         <div id="view-leaderboard" class="tab-content">
             <div class="card">
                 <h3>Gesamtstand aller Spieler im Vergleich</h3>
@@ -786,10 +1024,10 @@
             </div>
         </div>
 
-        <!-- 2. TAB: EINZELERGEBNISSE -->
         <div id="view-singles" class="tab-content hidden">
             <div class="card">
                 <h3>Alle Einzelergebnisse</h3>
+                
                 <div class="filter-bar">
                     <div class="filter-item">
                         <label for="singles-player-filter">Spieler:</label>
@@ -820,7 +1058,6 @@
             </div>
         </div>
 
-        <!-- 3. TAB: EINZELSPIELER-MATRIX -->
         <div id="view-matrix" class="tab-content hidden">
             <div class="card">
                 <h3>Analyse & Bestleistungen</h3>
@@ -833,28 +1070,35 @@
                 </div>
             </div>
 
-            <!-- DIAGRAMMBOX -->
             <div class="card">
                 <h3 id="charts-accordion-header" class="accordion-header open" onclick="toggleChartsAccordion()">
-                    <span>📈 Leistungsentwicklung & Detaillierte Analysen</span>
+                    <span>📈 Leistungsentwicklung & Detaillierte Analysen (Gestochen Scharf / Retina Ready)</span>
                     <span id="charts-toggle-icon" class="toggle-icon">Diagramme ausblenden ▲</span>
                 </h3>
                 <div id="charts-accordion-body" class="charts-container">
                     <div class="chart-card">
                         <h4 id="trend-chart-title">Trend der Runden-Gesamtergebnisse</h4>
-                        <canvas id="trend-canvas" class="chart-canvas" width="450" height="200"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="trend-canvas" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h4>Handicap-Verlauf (HCPI)</h4>
-                        <canvas id="hcp-canvas" class="chart-canvas" width="450" height="200"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="hcp-canvas" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h4>Trefferquote nach Score-Kategorien</h4>
-                        <canvas id="distribution-canvas" class="chart-canvas" width="450" height="200"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="distribution-canvas" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
                         <h4>Ø Score nach Loch-Typ (im Vergleich zu PAR)</h4>
-                        <canvas id="par-type-canvas" class="chart-canvas" width="450" height="200"></canvas>
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="par-type-canvas" class="chart-canvas"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -880,48 +1124,71 @@
             </div>
         </div>
 
-        <!-- 4. TAB: NEUE RUNDE ERFASSEN -->
-        <div id="view-entry" class="tab-content hidden">
+        <div id="view-add" class="tab-content hidden">
             <div class="card">
-                <h3>Neue Spielrunde erfassen</h3>
+                <h3>Einzelrunde erfassen</h3>
                 <div class="info-box">
-                    Erfassen Sie eine neue Runde für den aktuell gewählten Spieler (<strong id="entry-player-display">-</strong>). Die eingegebenen Scores fließen direkt in die Eclectic-Wertung ein.
+                    <strong>💡 Flexibler Runden-Import:</strong> Trage 18 Löcher ein oder wähle nur die Front Nine (1–9) bzw. Back Nine (10–18). Die App erkennt automatisch, ob es sich um eine 9- oder 18-Loch-Runde handelt.
                 </div>
-
-                <div class="entry-grid">
-                    <div style="display:flex; flex-direction:column; gap:6px;">
-                        <label style="font-size:12px; font-weight:700;">Spieldatum:</label>
-                        <input type="date" id="entry-date" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-size:13px; outline:none;">
+                <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label for="round-date" style="color: var(--text); font-weight:600;">Spieldatum:</label>
+                        <input type="date" id="round-date" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; background: var(--input-bg); color: var(--text);">
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:6px;">
-                        <label style="font-size:12px; font-weight:700;">Handicap Index (HCPI) dieser Runde:</label>
-                        <input type="number" id="entry-hcp" step="0.1" min="-10" max="54" placeholder="z.B. 18.4" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-size:13px; outline:none;">
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:6px; grid-column: span 2;">
-                        <label style="font-size:12px; font-weight:700;">Rundentyp:</label>
-                        <select id="entry-type" onchange="handleEntryTypeChange()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-size:13px; outline:none; background:white;">
-                            <option value="18-Loch">18-Loch Runde (Gesamt)</option>
-                            <option value="Front-9">9-Loch Runde (Loch 1 - 9 / Front Nine)</option>
-                            <option value="Back-9">9-Loch Runde (Loch 10 - 18 / Back Nine)</option>
-                        </select>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label for="round-hcp" style="color: var(--text); font-weight:600;">Tages-Handicap (HCPI):</label>
+                        <input type="number" id="round-hcp" step="0.1" value="36.0" inputmode="decimal" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; background: var(--input-bg); color: var(--text);">
                     </div>
                 </div>
 
-                <h4 style="margin-top:20px; font-size:14px; border-bottom:1px solid var(--border); padding-bottom:8px;">Loch-Ergebnisse (Brutto-Schläge)</h4>
-                <div id="entry-scores-container" class="score-inputs-grid"></div>
+                <div class="sub-tabs">
+                    <button class="sub-tab-btn active" id="add-sub-1" onclick="switchSubTab('add', 'front')">Loch 1 - 9 (Front Nine)</button>
+                    <button class="sub-tab-btn" id="add-sub-2" onclick="switchSubTab('add', 'back')">Loch 10 - 18 (Back Nine)</button>
+                </div>
 
-                <div class="btn-panel" style="margin-top: 24px;">
-                    <button class="btn-submit" onclick="submitNewRound()">Runde speichern</button>
+                <div class="live-sum-box">
+                    <div>Front Nine (1–9): <span id="sum-front">-</span></div>
+                    <div>Back Nine (10–18): <span id="sum-back">-</span></div>
+                    <div>Gesamt (18 Löcher): <span id="sum-total">-</span></div>
+                </div>
+
+                <div class="quick-score-bar">
+                    <button class="quick-score-btn" onclick="applyQuickScore(-1)">
+                        <span>-1</span>
+                        <small>Birdie / -1</small>
+                    </button>
+                    <button class="quick-score-btn" style="border-color: var(--text); color: var(--text);" onclick="applyQuickScore(0)">
+                        <span>PAR</span>
+                        <small>Par-Wert</small>
+                    </button>
+                    <button class="quick-score-btn" onclick="applyQuickScore(1)">
+                        <span>+1</span>
+                        <small>Bogey / +1</small>
+                    </button>
+                    <button class="quick-score-btn" onclick="applyQuickScore(2)">
+                        <span>+2</span>
+                        <small>Dbl Bogey</small>
+                    </button>
+                    <button class="quick-score-btn" style="color: #ef4444;" onclick="applyQuickScore('clear')">
+                        <span>⌫</span>
+                        <small>Löschen</small>
+                    </button>
+                </div>
+
+                <div id="add-score-front" class="score-grid"></div>
+                <div id="add-score-back" class="score-grid hidden"></div>
+
+                <div class="btn-panel">
+                    <button class="btn-submit" onclick="saveRound()">Runde für aktiven Spieler speichern</button>
                 </div>
             </div>
         </div>
 
-        <!-- 5. TAB: PLATZ-SETUP -->
         <div id="view-setup" class="tab-content hidden">
             <div class="card">
                 <h3>Platzkonfiguration</h3>
                 <div class="info-box">
-                    Tragen Sie hier die offiziellen <strong>PAR-Werte</strong> sowie den Schwierigkeitsgrad (<strong>HCPI-Index 1 bis 18</strong>) ein.
+                    Tragen Sie hier die offiziellen <strong>PAR-Werte</strong> sowie den Schwierigkeitsgrad (<strong>HCPI-Index / Vorgabe-Schlüssel 1 bis 18</strong>) des Platzes ein.
                 </div>
                 <div class="sub-tabs">
                     <button class="sub-tab-btn active" id="setup-sub-1" onclick="switchSubTab('setup', 'front')">Loch 1 - 9</button>
@@ -940,51 +1207,51 @@
     </div>
 
     <script>
+        function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         let appState = {
             players: {},
-            activePlayerId: null,
             courseSetup: {
-                par: [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 5, 4, 4, 3, 4, 4, 5],
-                hcpIndex: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+                par: Array(18).fill(4),
+                hcpIndex: [1, 18, 5, 14, 9, 10, 13, 2, 17, 4, 15, 8, 11, 12, 7, 3, 16, 6]
             },
+            activePlayerId: null,
             currentMainTab: 'leaderboard',
             subTabs: {
                 leaderboard: 'all',
                 singles: 'all',
                 matrix: 'front',
+                add: 'front',
                 setup: 'front'
             },
-            chartsExpanded: true
+            chartsExpanded: true,
+            theme: 'light'
         };
 
-        let chartPoints = [];
-        let distDonutSlices = [];
+        let currentFocusedHoleIndex = 0;
+        let isLocalSave = false;
 
         window.saveToFirebase = function() {};
 
         function saveToStorage() {
-            localStorage.setItem('eclectic_golf_pro_data', JSON.stringify(appState));
-            if (typeof window.saveToFirebase === 'function') {
-                window.saveToFirebase(appState);
+            try {
+                localStorage.setItem('eclectic_golf_pro_data', JSON.stringify(appState));
+            } catch (e) {
+                console.error("Fehler beim Speichern in localStorage:", e);
             }
-        }
-
-        /* RETINA CANVAS HELPER */
-        function setupRetinaCanvas(canvas) {
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            const width = rect.width || canvas.width;
-            const height = rect.height || canvas.height;
-
-            canvas.width = width * dpr;
-            canvas.height = height * dpr;
-            canvas.style.width = `${width}px`;
-            canvas.style.height = `${height}px`;
-
-            const ctx = canvas.getContext('2d');
-            ctx.scale(dpr, dpr);
-
-            return { ctx, width, height };
+            if (typeof window.saveToFirebase === 'function') {
+                isLocalSave = true;
+                window.saveToFirebase(appState);
+                setTimeout(() => { isLocalSave = false; }, 800);
+            }
         }
 
         function toggleMobileSidebar() {
@@ -999,12 +1266,36 @@
         function toggleSidebarBackup() {
             const body = document.getElementById('sidebar-backup-body');
             const icon = document.getElementById('sidebar-backup-toggle-icon');
+            if (!body || !icon) return;
             if (body.classList.contains('hidden')) {
                 body.classList.remove('hidden');
                 icon.innerText = '▲';
             } else {
                 body.classList.add('hidden');
                 icon.innerText = '▼';
+            }
+        }
+
+        function toggleTheme() {
+            appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+            applyTheme();
+            saveToStorage();
+        }
+
+        function applyTheme() {
+            const isDark = appState.theme === 'dark';
+            document.body.classList.toggle('dark-mode', isDark);
+            
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            if (themeIcon && themeText) {
+                themeIcon.innerText = isDark ? '☀️' : '🌙';
+                themeText.innerText = isDark ? 'Light Mode' : 'Dark Mode';
+            }
+            
+            if (appState.currentMainTab === 'matrix') {
+                updateChartsAccordionUI();
             }
         }
 
@@ -1019,7 +1310,7 @@
 
         function calculateStableford(bruttoScore, par, holeHcpIndex, playerHcp) {
             if (!bruttoScore || bruttoScore <= 0) return 0;
-            const courseHcp = Math.round(playerHcp);
+            const courseHcp = Math.round(playerHcp || 0);
             let extraStrokes = Math.floor(courseHcp / 18);
             const remainder = courseHcp % 18;
             if (holeHcpIndex <= remainder) extraStrokes += 1;
@@ -1039,25 +1330,29 @@
 
             if (!player || !player.rounds || player.rounds.length === 0) return profile;
 
+            const globalSelect = document.getElementById('global-mode-select');
+            const globalMode = globalSelect ? globalSelect.value : 'brutto';
+
             for (let i = 0; i < 18; i++) {
                 let bestBrutto = Infinity;
                 let bestNetto = -1;
                 
                 player.rounds.forEach(round => {
+                    if (!round || !round.scores) return;
                     const score = round.scores[i];
                     if (score !== null && score !== undefined && score > 0) {
                         if (score < bestBrutto) {
                             bestBrutto = score;
-                            if (document.getElementById('global-mode-select').value === 'brutto') {
+                            if (globalMode === 'brutto') {
                                 profile.dates[i] = round.date;
                                 profile.hcpUsed[i] = round.hcp;
                             }
                         }
-                        const netPoints = calculateStableford(score, appState.courseSetup.par[i], appState.courseSetup.hcpIndex[i], round.hcp);
+                        const netPoints = calculateStableford(score, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, round.hcp);
                         
                         if (netPoints > bestNetto || (netPoints === bestNetto && score < (profile.brutto[i] || Infinity))) {
                             bestNetto = netPoints;
-                            if (document.getElementById('global-mode-select').value === 'netto') {
+                            if (globalMode === 'netto') {
                                 profile.dates[i] = round.date;
                                 profile.hcpUsed[i] = round.hcp;
                             }
@@ -1073,6 +1368,7 @@
 
         function getScoreColorClass(score, par, mode) {
             if (score === null || score === undefined) return '';
+            
             if (mode === 'brutto') {
                 const diff = score - par;
                 if (diff <= -2) return 'score-eagle';
@@ -1106,7 +1402,8 @@
                 body.classList.remove('hidden');
                 header.classList.add('open');
                 icon.innerText = "Diagramme ausblenden ▲";
-                const mode = document.getElementById('global-mode-select').value;
+                const modeSelect = document.getElementById('global-mode-select');
+                const mode = modeSelect ? modeSelect.value : 'brutto';
                 renderCharts(mode);
             } else {
                 body.classList.add('hidden');
@@ -1116,32 +1413,45 @@
         }
 
         function switchMainTab(tabName) {
-            if (appState.currentMainTab === 'setup') saveSetupQuietly();
+            if (appState.currentMainTab === 'setup') {
+                saveSetupQuietly();
+            }
             appState.currentMainTab = tabName;
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(view => view.classList.add('hidden'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            document.getElementById(`view-${tabName}`).classList.remove('hidden');
+            
+            const targetTabBtn = document.getElementById(`tab-${tabName}`);
+            const targetView = document.getElementById(`view-${tabName}`);
+            if (targetTabBtn) targetTabBtn.classList.add('active');
+            if (targetView) targetView.classList.remove('hidden');
+            
             updateViews();
         }
 
         function switchSubTab(mainTab, subRange) {
-            if (mainTab === 'setup') saveSetupQuietly();
+            if (mainTab === 'setup') {
+                saveSetupQuietly();
+            }
             appState.subTabs[mainTab] = subRange;
             if (mainTab === 'leaderboard') {
-                document.getElementById('lead-sub-1').classList.toggle('active', subRange === 'front');
-                document.getElementById('lead-sub-2').classList.toggle('active', subRange === 'back');
-                document.getElementById('lead-sub-3').classList.toggle('active', subRange === 'all');
+                document.getElementById('lead-sub-1')?.classList.toggle('active', subRange === 'front');
+                document.getElementById('lead-sub-2')?.classList.toggle('active', subRange === 'back');
+                document.getElementById('lead-sub-3')?.classList.toggle('active', subRange === 'all');
             } else if (mainTab === 'singles') {
-                document.getElementById('singles-sub-1').classList.toggle('active', subRange === 'front');
-                document.getElementById('singles-sub-2').classList.toggle('active', subRange === 'back');
-                document.getElementById('singles-sub-3').classList.toggle('active', subRange === 'all');
+                document.getElementById('singles-sub-1')?.classList.toggle('active', subRange === 'front');
+                document.getElementById('singles-sub-2')?.classList.toggle('active', subRange === 'back');
+                document.getElementById('singles-sub-3')?.classList.toggle('active', subRange === 'all');
             } else if (mainTab === 'matrix') {
-                document.getElementById('matrix-sub-1').classList.toggle('active', subRange === 'front');
-                document.getElementById('matrix-sub-2').classList.toggle('active', subRange === 'back');
+                document.getElementById('matrix-sub-1')?.classList.toggle('active', subRange === 'front');
+                document.getElementById('matrix-sub-2')?.classList.toggle('active', subRange === 'back');
+            } else if (mainTab === 'add') {
+                document.getElementById('add-sub-1')?.classList.toggle('active', subRange === 'front');
+                document.getElementById('add-sub-2')?.classList.toggle('active', subRange === 'back');
+                document.getElementById('add-score-front')?.classList.toggle('hidden', subRange !== 'front');
+                document.getElementById('add-score-back')?.classList.toggle('hidden', subRange !== 'back');
             } else if (mainTab === 'setup') {
-                document.getElementById('setup-sub-1').classList.toggle('active', subRange === 'front');
-                document.getElementById('setup-sub-2').classList.toggle('active', subRange === 'back');
+                document.getElementById('setup-sub-1')?.classList.toggle('active', subRange === 'front');
+                document.getElementById('setup-sub-2')?.classList.toggle('active', subRange === 'back');
             }
             updateViews();
         }
@@ -1150,7 +1460,9 @@
             renderPlayerList();
             populateSinglesPlayerFilter();
             populateSinglesDateFilter();
-            const mode = document.getElementById('global-mode-select').value;
+            const modeSelect = document.getElementById('global-mode-select');
+            const mode = modeSelect ? modeSelect.value : 'brutto';
+
             if (appState.currentMainTab === 'leaderboard') renderLeaderboard(mode);
             else if (appState.currentMainTab === 'singles') renderSinglesTable();
             else if (appState.currentMainTab === 'matrix') { 
@@ -1158,56 +1470,78 @@
                 renderHistory(); 
                 updateChartsAccordionUI();
             }
-            else if (appState.currentMainTab === 'entry') renderEntryForm();
             else if (appState.currentMainTab === 'setup') renderSetupTable();
         }
 
         function renderPlayerList() {
             const list = document.getElementById('sidebar-player-list');
+            if (!list) return;
+            
             list.innerHTML = '';
             
-            const sortedPlayers = Object.values(appState.players).sort((a, b) => 
-                a.name.localeCompare(b.name, 'de', { sensitivity: 'base' })
+            const sortedPlayers = Object.values(appState.players || {}).sort((a, b) => 
+                (a.name || '').localeCompare(b.name || '', 'de', { sensitivity: 'base' })
             );
+
+            const countBadge = document.getElementById('player-count-display');
+            if (countBadge) countBadge.innerText = `${sortedPlayers.length} Spieler`;
             
             sortedPlayers.forEach(player => {
                 const li = document.createElement('li');
-                li.className = `player-item ${player.id === appState.activePlayerId ? 'active' : ''}`;
+                const isActive = player.id === appState.activePlayerId;
+                li.className = `player-item ${isActive ? 'active' : ''}`;
                 
                 li.onclick = () => {
                     appState.activePlayerId = player.id;
-                    document.getElementById('current-player-display').innerText = player.name;
-                    if (window.innerWidth <= 900) toggleMobileSidebar();
+                    if (player.rounds && player.rounds.length > 0) {
+                        const lastHcp = player.rounds[player.rounds.length - 1].hcp;
+                        const hcpInput = document.getElementById('round-hcp');
+                        if (hcpInput) hcpInput.value = lastHcp;
+                    }
+                    const currDisplay = document.getElementById('current-player-display');
+                    if (currDisplay) currDisplay.innerText = player.name;
+                    
+                    if (window.innerWidth <= 900 && typeof toggleMobileSidebar === 'function') {
+                        toggleMobileSidebar();
+                    }
                     updateViews();
                 };
                 
                 const roundsCount = player.rounds ? player.rounds.length : 0;
+                const initial = (player.name || '').trim().charAt(0).toUpperCase() || '🏌️';
+                
                 li.innerHTML = `
-                    <div style="display:flex; align-items:center; overflow:hidden; text-overflow:ellipsis;">
-                        <span>👤 ${player.name}</span>
+                    <div class="player-info-main">
+                        <div class="player-avatar">${escapeHTML(initial)}</div>
+                        <span class="player-name-text">${escapeHTML(player.name)}</span>
                     </div>
-                    <div style="display:flex; align-items:center;">
+                    <div class="player-meta-side">
                         <span class="badge">${roundsCount} Rds</span>
-                        <button class="delete-player-btn" title="Spieler löschen" onclick="deletePlayer(event, '${player.id}')">🗑️</button>
+                        <button class="delete-player-btn" title="Spieler löschen" onclick="deletePlayer(event, '${escapeHTML(player.id)}')">🗑️</button>
                     </div>
                 `;
                 list.appendChild(li);
             });
             
-            if (appState.activePlayerId && appState.players[appState.activePlayerId]) {
-                document.getElementById('current-player-display').innerText = appState.players[appState.activePlayerId].name;
-            } else {
-                document.getElementById('current-player-display').innerText = "-";
+            const currDisplay = document.getElementById('current-player-display');
+            if (currDisplay) {
+                if (appState.activePlayerId && appState.players[appState.activePlayerId]) {
+                    currDisplay.innerText = appState.players[appState.activePlayerId].name;
+                } else {
+                    currDisplay.innerText = "-";
+                }
             }
         }
 
         function populateSinglesPlayerFilter() {
             const filterSelect = document.getElementById('singles-player-filter');
+            if (!filterSelect) return;
             const currentVal = filterSelect.value;
+            
             filterSelect.innerHTML = '<option value="ALL">-- Alle Spieler --</option>';
             
-            const sortedPlayers = Object.values(appState.players).sort((a, b) => 
-                a.name.localeCompare(b.name, 'de', { sensitivity: 'base' })
+            const sortedPlayers = Object.values(appState.players || {}).sort((a, b) => 
+                (a.name || '').localeCompare(b.name || '', 'de', { sensitivity: 'base' })
             );
             
             sortedPlayers.forEach(p => {
@@ -1217,19 +1551,26 @@
                 filterSelect.appendChild(opt);
             });
             
-            if (currentVal && Array.from(filterSelect.options).some(o => o.value === currentVal)) filterSelect.value = currentVal;
-            else filterSelect.value = 'ALL';
+            if (currentVal && Array.from(filterSelect.options).some(o => o.value === currentVal)) {
+                filterSelect.value = currentVal;
+            } else {
+                filterSelect.value = 'ALL';
+            }
         }
 
         function populateSinglesDateFilter() {
             const dateSelect = document.getElementById('singles-date-filter');
+            if (!dateSelect) return;
             const currentVal = dateSelect.value;
+
             dateSelect.innerHTML = '<option value="ALL">-- Alle Daten --</option>';
 
             let datesSet = new Set();
-            Object.values(appState.players).forEach(player => {
+            Object.values(appState.players || {}).forEach(player => {
                 if (player.rounds && player.rounds.length > 0) {
-                    player.rounds.forEach(r => { if (r.date) datesSet.add(r.date.trim()); });
+                    player.rounds.forEach(r => {
+                        if (r.date) datesSet.add(r.date.trim());
+                    });
                 }
             });
 
@@ -1242,22 +1583,29 @@
                 dateSelect.appendChild(opt);
             });
 
-            if (currentVal && Array.from(dateSelect.options).some(o => o.value === currentVal)) dateSelect.value = currentVal;
-            else dateSelect.value = 'ALL';
+            if (currentVal && Array.from(dateSelect.options).some(o => o.value === currentVal)) {
+                dateSelect.value = currentVal;
+            } else {
+                dateSelect.value = 'ALL';
+            }
         }
 
         function resetSinglesFilters() {
-            document.getElementById('singles-player-filter').value = 'ALL';
-            document.getElementById('singles-date-filter').value = 'ALL';
+            const playerFilter = document.getElementById('singles-player-filter');
+            const dateFilter = document.getElementById('singles-date-filter');
+            if (playerFilter) playerFilter.value = 'ALL';
+            if (dateFilter) dateFilter.value = 'ALL';
             renderSinglesTable();
         }
 
         function addPlayer() {
             const nameInput = document.getElementById('new-player-name');
+            if (!nameInput) return;
             const name = nameInput.value.trim();
             if (!name) return;
             
             const id = 'p_' + Date.now();
+            if (!appState.players) appState.players = {};
             appState.players[id] = { id: id, name: name, rounds: [] };
             appState.activePlayerId = id;
             nameInput.value = '';
@@ -1268,15 +1616,18 @@
 
         function deletePlayer(event, playerId) {
             event.stopPropagation();
+            
             const player = appState.players[playerId];
             if (!player) return;
 
             if (confirm(`Möchten Sie den Spieler "${player.name}" und alle seine gespeicherten Runden wirklich löschen?`)) {
                 delete appState.players[playerId];
+                
                 if (appState.activePlayerId === playerId) {
                     const remainingPlayerIds = Object.keys(appState.players);
                     appState.activePlayerId = remainingPlayerIds.length > 0 ? remainingPlayerIds[0] : null;
                 }
+                
                 saveToStorage();
                 updateViews();
             }
@@ -1284,6 +1635,7 @@
 
         function renderLeaderboard(mode) {
             const table = document.getElementById('leaderboard-table');
+            if (!table) return;
             const range = appState.subTabs.leaderboard;
             let start = 0, end = 18;
             if (range === 'front') { start = 0; end = 9; }
@@ -1291,49 +1643,41 @@
             
             let html = `<thead><tr><th>Pos</th><th class="text-left">Spieler</th>`;
             for (let i = start; i < end; i++) {
-                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${appState.courseSetup.par[i]}</small></th>`;
+                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${appState.courseSetup.par[i] || 4}</small></th>`;
             }
             html += `<th>Gesamt (${mode === 'brutto' ? 'Schläge' : 'Punkte'})</th></tr></thead><tbody>`;
             
-            // Profilwerte berechnen & NUR Spieler mit Runden filtern
-            let rankedPlayers = Object.values(appState.players)
-                .map(player => {
-                    const profile = getEclecticProfile(player.id);
-                    let total = 0, hasPlayed = false;
-                    for (let i = start; i < end; i++) {
-                        const val = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
-                        if (val !== null) { total += val; hasPlayed = true; }
-                    }
-                    return {
-                        id: player.id,
-                        name: player.name,
-                        profile: profile,
-                        total: total,
-                        hasPlayed: hasPlayed
-                    };
-                })
-                .filter(player => player.hasPlayed); // Nur aktive Spieler anzeigen
-
-            // Aufsteigend nach der Gesamtanzahl sortieren
-            rankedPlayers.sort((a, b) => a.total - b.total);
+            let rankedPlayers = Object.values(appState.players || {}).map(player => {
+                const profile = getEclecticProfile(player.id);
+                let total = 0;
+                let hasPlayed = false;
+                for (let i = start; i < end; i++) {
+                    const val = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
+                    if (val !== null) { total += val; hasPlayed = true; }
+                }
+                return {
+                    id: player.id,
+                    name: player.name,
+                    profile: profile,
+                    total: hasPlayed ? total : (mode === 'brutto' ? Infinity : -1),
+                    hasPlayed: hasPlayed
+                };
+            });
             
-            if (rankedPlayers.length === 0) {
-                html += `<tr><td colspan="${(end - start) + 3}" style="padding:16px; text-align:center; color:var(--text-muted);">Keine Rundenergebnisse vorhanden.</td></tr></tbody>`;
-                table.innerHTML = html;
-                return;
-            }
-
+            rankedPlayers.sort((a, b) => mode === 'brutto' ? a.total - b.total : b.total - a.total);
+            
             rankedPlayers.forEach((rp, idx) => {
                 const isCurrent = rp.id === appState.activePlayerId ? 'highlight-row' : '';
+                const totalDisplay = rp.hasPlayed ? rp.total : '-';
                 
                 html += `<tr class="${isCurrent}">
                     <td>${idx + 1}</td>
-                    <td class="text-left"><strong>${rp.name}</strong></td>`;
+                    <td class="text-left"><strong>${escapeHTML(rp.name)}</strong></td>`;
                     
                 for (let i = start; i < end; i++) {
                     const scoreVal = mode === 'brutto' ? rp.profile.brutto[i] : rp.profile.netto[i];
-                    const dateInfo = rp.profile.dates[i] ? `Datum: ${rp.profile.dates[i]} (HCP: ${rp.profile.hcpUsed[i]})` : '';
-                    const parVal = appState.courseSetup.par[i];
+                    const dateInfo = rp.profile.dates[i] ? `Datum: ${escapeHTML(rp.profile.dates[i])} (HCP: ${rp.profile.hcpUsed[i]})` : '';
+                    const parVal = appState.courseSetup.par[i] || 4;
                     
                     if (scoreVal !== null) {
                         const colorClass = getScoreColorClass(scoreVal, parVal, mode);
@@ -1342,7 +1686,7 @@
                         html += `<td>-</td>`;
                     }
                 }
-                html += `<td><strong>${rp.total}</strong></td></tr>`;
+                html += `<td><strong>${totalDisplay}</strong></td></tr>`;
             });
             
             html += `</tbody>`;
@@ -1351,22 +1695,33 @@
 
         function renderSinglesTable() {
             const table = document.getElementById('singles-table');
-            const mode = document.getElementById('global-mode-select').value;
+            if (!table) return;
+            
+            const modeSelect = document.getElementById('global-mode-select');
+            const mode = modeSelect ? modeSelect.value : 'brutto';
             const range = appState.subTabs.singles;
-            const selectedPlayerId = document.getElementById('singles-player-filter').value;
-            const selectedDate = document.getElementById('singles-date-filter').value;
+            
+            const playerFilter = document.getElementById('singles-player-filter');
+            const dateFilter = document.getElementById('singles-date-filter');
+            const selectedPlayerId = playerFilter ? playerFilter.value : 'ALL';
+            const selectedDate = dateFilter ? dateFilter.value : 'ALL';
             
             let start = 0, end = 18;
             if (range === 'front') { start = 0; end = 9; }
             if (range === 'back') { start = 9; end = 18; }
 
             let allRounds = [];
-            Object.values(appState.players).forEach(player => {
+            
+            Object.values(appState.players || {}).forEach(player => {
                 if (selectedPlayerId === 'ALL' || player.id === selectedPlayerId) {
                     if (player.rounds && player.rounds.length > 0) {
                         player.rounds.forEach(round => {
-                            if (selectedDate === 'ALL' || round.date.trim() === selectedDate) {
-                                allRounds.push({ playerId: player.id, playerName: player.name, round: round });
+                            if (selectedDate === 'ALL' || (round.date && round.date.trim() === selectedDate)) {
+                                allRounds.push({
+                                    playerId: player.id,
+                                    playerName: player.name,
+                                    round: round
+                                });
                             }
                         });
                     }
@@ -1376,7 +1731,7 @@
             allRounds.sort((a, b) => {
                 const dateCompare = parseDateString(b.round.date) - parseDateString(a.round.date);
                 if (dateCompare !== 0) return dateCompare;
-                return a.playerName.localeCompare(b.playerName, 'de', { sensitivity: 'base' });
+                return (a.playerName || '').localeCompare(b.playerName || '', 'de', { sensitivity: 'base' });
             });
 
             let html = `<thead><tr>
@@ -1385,7 +1740,7 @@
                 <th>HCPI</th>`;
             
             for (let i = start; i < end; i++) {
-                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${appState.courseSetup.par[i]}</small></th>`;
+                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${appState.courseSetup.par[i] || 4}</small></th>`;
             }
             html += `<th>Summe (${mode === 'brutto' ? 'Brutto' : 'Netto'})</th></tr></thead><tbody>`;
 
@@ -1397,19 +1752,22 @@
 
             allRounds.forEach(item => {
                 const r = item.round;
-                let sum = 0, hasData = false;
+                let sum = 0;
+                let hasData = false;
+
                 const isCurrent = item.playerId === appState.activePlayerId ? 'highlight-row' : '';
 
                 html += `<tr class="${isCurrent}">
-                    <td class="text-left"><strong>${item.playerName}</strong></td>
-                    <td><small>${r.date}</small></td>
+                    <td class="text-left"><strong>${escapeHTML(item.playerName)}</strong></td>
+                    <td><small>${escapeHTML(r.date)}</small></td>
                     <td><small>${r.hcp}</small></td>`;
 
                 for (let i = start; i < end; i++) {
-                    const rawScore = r.scores[i];
+                    const rawScore = r.scores ? r.scores[i] : null;
                     if (rawScore !== null && rawScore !== undefined && rawScore > 0) {
-                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i], appState.courseSetup.hcpIndex[i], r.hcp);
-                        const colorClass = getScoreColorClass(cellVal, appState.courseSetup.par[i], mode);
+                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
+                        const parVal = appState.courseSetup.par[i] || 4;
+                        const colorClass = getScoreColorClass(cellVal, parVal, mode);
                         
                         html += `<td><span class="${colorClass}">${cellVal}</span></td>`;
                         sum += cellVal;
@@ -1428,6 +1786,7 @@
 
         function renderMatrix(mode) {
             const table = document.getElementById('matrix-table');
+            if (!table) return;
             const range = appState.subTabs.matrix;
             const playerId = appState.activePlayerId;
             
@@ -1449,25 +1808,27 @@
             let parSum = 0;
             html += `<tr><td class="text-left"><strong>Platz-PAR</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td>${appState.courseSetup.par[i]}</td>`;
-                parSum += appState.courseSetup.par[i];
+                const parVal = appState.courseSetup.par[i] || 4;
+                html += `<td>${parVal}</td>`;
+                parSum += parVal;
             }
             html += `<td><strong>${parSum}</strong></td></tr>`;
             
             html += `<tr><td class="text-left"><strong>HCPI-Lochindex</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td>${appState.courseSetup.hcpIndex[i]}</td>`;
+                html += `<td>${appState.courseSetup.hcpIndex[i] || 18}</td>`;
             }
             html += `<td>-</td></tr>`;
             
             if (player.rounds) {
                 player.rounds.forEach(round => {
-                    let roundSum = 0, hasData = false;
-                    html += `<tr><td class="text-left"><small>${round.date} (HCP:${round.hcp})</small></td>`;
+                    let roundSum = 0;
+                    let hasData = false;
+                    html += `<tr><td class="text-left"><small>${escapeHTML(round.date)} (HCP:${round.hcp})</small></td>`;
                     for (let i = start; i < end; i++) {
-                        const rawScore = round.scores[i];
+                        const rawScore = round.scores ? round.scores[i] : null;
                         if (rawScore) {
-                            const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i], appState.courseSetup.hcpIndex[i], round.hcp);
+                            const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, round.hcp);
                             const isBest = (mode === 'brutto' && rawScore === profile.brutto[i]) || (mode === 'netto' && cellVal === profile.netto[i]);
                             html += `<td class="${isBest ? 'best-score' : ''}">${cellVal}</td>`;
                             roundSum += cellVal;
@@ -1480,7 +1841,8 @@
                 });
             }
             
-            let eclecticSum = 0, hasEclectic = false;
+            let eclecticSum = 0;
+            let hasEclectic = false;
             html += `<tr class="highlight-row"><td class="text-left">🏆 Eclectic-Bestwert (${mode === 'brutto' ? 'Brutto' : 'Netto'})</td>`;
             for (let i = start; i < end; i++) {
                 const ecVal = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
@@ -1496,122 +1858,25 @@
             table.innerHTML = html;
         }
 
-        /* ERFASSUNGSMASKE LOGIK */
-        function renderEntryForm() {
-            const playerId = appState.activePlayerId;
-            const playerDisplay = document.getElementById('entry-player-display');
-            const dateInput = document.getElementById('entry-date');
-            const hcpInput = document.getElementById('entry-hcp');
-
-            if (!playerId || !appState.players[playerId]) {
-                playerDisplay.innerText = "Kein Spieler ausgewählt";
-                return;
-            }
-
-            const player = appState.players[playerId];
-            playerDisplay.innerText = player.name;
-
-            if (!dateInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                dateInput.value = today;
-            }
-
-            if (!hcpInput.value && player.rounds && player.rounds.length > 0) {
-                const sorted = [...player.rounds].sort((a, b) => parseDateString(b.date) - parseDateString(a.date));
-                hcpInput.value = sorted[0].hcp;
-            }
-
-            handleEntryTypeChange();
-        }
-
-        function handleEntryTypeChange() {
-            const container = document.getElementById('entry-scores-container');
-            const roundType = document.getElementById('entry-type').value;
+        /* --- RETINA / HIGH-DPI CRISP CANVAS RENDERING HELPER --- */
+        function setupCrispCanvas(canvas) {
+            if (!canvas) return null;
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
             
-            container.innerHTML = '';
+            const displayWidth = rect.width || canvas.clientWidth || 400;
+            const displayHeight = rect.height || canvas.clientHeight || 200;
 
-            for (let i = 0; i < 18; i++) {
-                const isFront = i < 9;
-                const isBack = i >= 9;
-                let isDisabled = false;
+            canvas.width = Math.round(displayWidth * dpr);
+            canvas.height = Math.round(displayHeight * dpr);
 
-                if (roundType === 'Front-9' && isBack) isDisabled = true;
-                if (roundType === 'Back-9' && isFront) isDisabled = true;
-
-                const holeCard = document.createElement('div');
-                holeCard.className = `score-input-card ${isDisabled ? 'disabled' : ''}`;
-                holeCard.innerHTML = `
-                    <label>Loch ${i + 1}</label>
-                    <span>P:${appState.courseSetup.par[i]} | H:${appState.courseSetup.hcpIndex[i]}</span>
-                    <input type="number" id="entry-hole-${i}" min="1" max="15" ${isDisabled ? 'disabled' : ''} placeholder="-">
-                `;
-                container.appendChild(holeCard);
-            }
-        }
-
-        function submitNewRound() {
-            const playerId = appState.activePlayerId;
-            if (!playerId || !appState.players[playerId]) {
-                alert("Bitte wählen Sie zuerst einen Spieler aus.");
-                return;
-            }
-
-            const dateInput = document.getElementById('entry-date').value;
-            const hcpInput = parseFloat(document.getElementById('entry-hcp').value);
-            const roundType = document.getElementById('entry-type').value;
-
-            if (!dateInput) { alert("Bitte geben Sie ein gültiges Datum ein."); return; }
-            if (isNaN(hcpInput)) { alert("Bitte geben Sie ein gültiges Handicap ein."); return; }
-
-            let formattedDate = dateInput;
-            if (dateInput.includes('-')) {
-                const parts = dateInput.split('-');
-                if (parts.length === 3) formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
-            }
-
-            let scores = Array(18).fill(null);
-            let hasValidScore = false;
-
-            for (let i = 0; i < 18; i++) {
-                const inputEl = document.getElementById(`entry-hole-${i}`);
-                if (inputEl && !inputEl.disabled && inputEl.value) {
-                    const scoreVal = parseInt(inputEl.value, 10);
-                    if (!isNaN(scoreVal) && scoreVal >= 1) {
-                        scores[i] = scoreVal;
-                        hasValidScore = true;
-                    }
-                }
-            }
-
-            if (!hasValidScore) {
-                alert("Bitte tragen Sie mindestens ein Loch-Ergebnis ein.");
-                return;
-            }
-
-            const newRound = {
-                id: 'r_' + Date.now(),
-                date: formattedDate,
-                hcp: hcpInput,
-                type: roundType,
-                scores: scores
-            };
-
-            const player = appState.players[playerId];
-            if (!player.rounds) player.rounds = [];
-            player.rounds.push(newRound);
-
-            saveToStorage();
-            alert(`Runde für ${player.name} erfolgreich gespeichert!`);
+            const ctx = canvas.getContext('2d');
+            ctx.resetTransform?.();
+            ctx.scale(dpr, dpr);
             
-            for (let i = 0; i < 18; i++) {
-                const inputEl = document.getElementById(`entry-hole-${i}`);
-                if (inputEl) inputEl.value = '';
-            }
-
-            switchMainTab('matrix');
+            return { ctx, width: displayWidth, height: displayHeight, dpr };
         }
 
-        /* DIAGRAMME RENDERN MIT RETINA-SUPPORT */
         function renderCharts(mode) {
             if (!appState.chartsExpanded) return;
 
@@ -1624,57 +1889,52 @@
             
             if (!trendCanvas || !hcpCanvas || !distCanvas || !parTypeCanvas) return;
 
-            const { ctx: ctxTrend, width: w1, height: h1 } = setupRetinaCanvas(trendCanvas);
-            const { ctx: ctxHcp, width: w2, height: h2 } = setupRetinaCanvas(hcpCanvas);
-            const { ctx: ctxDist, width: w3, height: h3 } = setupRetinaCanvas(distCanvas);
-            const { ctx: ctxParType, width: w4, height: h4 } = setupRetinaCanvas(parTypeCanvas);
-            
-            ctxTrend.clearRect(0, 0, w1, h1);
-            ctxHcp.clearRect(0, 0, w2, h2);
-            ctxDist.clearRect(0, 0, w3, h3);
-            ctxParType.clearRect(0, 0, w4, h4);
+            const trendInfo = setupCrispCanvas(trendCanvas);
+            const hcpInfo = setupCrispCanvas(hcpCanvas);
+            const distInfo = setupCrispCanvas(distCanvas);
+            const parTypeInfo = setupCrispCanvas(parTypeCanvas);
+
+            if (!trendInfo) return;
 
             if (!playerId || !appState.players[playerId] || !appState.players[playerId].rounds || appState.players[playerId].rounds.length === 0) {
-                drawEmptyChart(ctxTrend, w1, h1, "Keine Runden vorhanden");
-                drawEmptyChart(ctxHcp, w2, h2, "Keine Runden vorhanden");
-                drawEmptyChart(ctxDist, w3, h3, "Keine Runden vorhanden");
-                drawEmptyChart(ctxParType, w4, h4, "Keine Runden vorhanden");
+                drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine Runden vorhanden");
+                drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine Runden vorhanden");
+                drawEmptyChart(distInfo.ctx, distInfo.width, distInfo.height, "Keine Runden vorhanden");
+                drawEmptyChart(parTypeInfo.ctx, parTypeInfo.width, parTypeInfo.height, "Keine Runden vorhanden");
                 return;
             }
 
             const player = appState.players[playerId];
             const sortedRounds = [...player.rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
 
-            // 1. TREND-DIAGRAMM
-            trendTitle.innerText = `Trend der Runden-Gesamtergebnisse (${mode === 'brutto' ? 'Schläge' : 'Netto-Punkte'})`;
+            if (trendTitle) trendTitle.innerText = `Trend der Runden-Gesamtergebnisse (${mode === 'brutto' ? 'Schläge' : 'Netto-Punkte'})`;
+            
             const trendData = sortedRounds.map(r => {
                 let sum = 0, count = 0;
                 for (let i = 0; i < 18; i++) {
-                    const score = r.scores[i];
+                    const score = r.scores ? r.scores[i] : null;
                     if (score && score > 0) {
-                        sum += mode === 'brutto' ? score : calculateStableford(score, appState.courseSetup.par[i], appState.courseSetup.hcpIndex[i], r.hcp);
+                        sum += mode === 'brutto' ? score : calculateStableford(score, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
                         count++;
                     }
                 }
                 return { date: r.date, val: count > 0 ? sum : null };
             }).filter(item => item.val !== null);
 
-            if (trendData.length === 0) drawEmptyChart(ctxTrend, w1, h1, "Keine verwertbaren Runden");
-            else drawLineChart(ctxTrend, w1, h1, trendData, "#10b981", "#f59e0b");
+            if (trendData.length === 0) drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine verwertbaren Runden");
+            else drawLineChart(trendInfo.ctx, trendInfo.width, trendInfo.height, trendData, "#10b981", "#059669");
 
-            // 2. HANDICAP-VERLAUF
             const hcpData = sortedRounds.map(r => ({ date: r.date, val: r.hcp })).filter(item => item.val !== undefined && item.val !== null);
-            if (hcpData.length === 0) drawEmptyChart(ctxHcp, w2, h2, "Keine HCP-Daten");
-            else drawLineChart(ctxHcp, w2, h2, hcpData, "#0284c7", "#38bdf8", false);
+            if (hcpData.length === 0) drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine HCP-Daten");
+            else drawLineChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, hcpData, "#0284c7", "#38bdf8");
 
-            // 3. SCORE-VERTEILUNG (DONUT)
             let counts = { eagle: 0, birdie: 0, par: 0, bogey: 0, dbogey: 0 };
             sortedRounds.forEach(r => {
                 for (let i = 0; i < 18; i++) {
-                    const score = r.scores[i];
+                    const score = r.scores ? r.scores[i] : null;
                     if (score && score > 0) {
-                        const val = mode === 'brutto' ? score : calculateStableford(score, appState.courseSetup.par[i], appState.courseSetup.hcpIndex[i], r.hcp);
-                        const cls = getScoreColorClass(val, appState.courseSetup.par[i], mode);
+                        const val = mode === 'brutto' ? score : calculateStableford(score, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
+                        const cls = getScoreColorClass(val, appState.courseSetup.par[i] || 4, mode);
                         if (cls === 'score-eagle') counts.eagle++;
                         else if (cls === 'score-birdie') counts.birdie++;
                         else if (cls === 'score-par') counts.par++;
@@ -1683,43 +1943,43 @@
                     }
                 }
             });
-            drawDonutChart(ctxDist, w3, h3, counts);
+            drawBarChart(distInfo.ctx, distInfo.width, distInfo.height, counts);
 
-            // 4. RADAR-CHART NACH LOCH-TYP
             let parStats = { 3: { sumDiff: 0, count: 0 }, 4: { sumDiff: 0, count: 0 }, 5: { sumDiff: 0, count: 0 } };
             sortedRounds.forEach(r => {
                 for (let i = 0; i < 18; i++) {
-                    const score = r.scores[i];
-                    const holePar = appState.courseSetup.par[i];
+                    const score = r.scores ? r.scores[i] : null;
+                    const holePar = appState.courseSetup.par[i] || 4;
                     if (score && score > 0 && parStats[holePar]) {
                         parStats[holePar].sumDiff += (score - holePar);
                         parStats[holePar].count++;
                     }
                 }
             });
-            drawParTypeChart(ctxParType, w4, h4, parStats);
+            drawParTypeChart(parTypeInfo.ctx, parTypeInfo.width, parTypeInfo.height, parStats);
         }
 
         function drawEmptyChart(ctx, w, h, text) {
-            ctx.fillStyle = "#64748b";
-            ctx.font = "12px sans-serif";
+            ctx.fillStyle = appState.theme === 'dark' ? "#94a3b8" : "#64748b";
+            ctx.font = "12px -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
             ctx.fillText(text, w / 2, h / 2);
         }
 
-        function drawLineChart(ctx, w, h, data, lineColor, dotColor, showParLine = true) {
-            const padding = 40;
+        function drawLineChart(ctx, w, h, data, lineColor, dotColor) {
+            const padding = 35;
             const graphWidth = w - padding * 2;
             const graphHeight = h - padding * 2;
+            const isDark = appState.theme === 'dark';
 
             const values = data.map(d => d.val);
-            const coursePar = appState.courseSetup.par.reduce((a, b) => a + b, 0);
+            let minVal = Math.min(...values);
+            let maxVal = Math.max(...values);
+            
+            if (minVal === maxVal) { minVal -= 1; maxVal += 1; }
 
-            let minVal = Math.min(...values, showParLine ? coursePar - 2 : Infinity);
-            let maxVal = Math.max(...values, showParLine ? coursePar + 2 : -Infinity);
-            if (minVal === maxVal) { minVal -= 2; maxVal += 2; }
-
-            ctx.strokeStyle = "#e2e8f0";
+            ctx.strokeStyle = isDark ? "#334155" : "#cbd5e1";
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(padding, padding);
@@ -1727,167 +1987,101 @@
             ctx.lineTo(w - padding, h - padding);
             ctx.stroke();
 
-            ctx.fillStyle = "#64748b";
-            ctx.font = "10px sans-serif";
+            ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
+            ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.textAlign = "right";
-            ctx.fillText(maxVal.toString(), padding - 6, padding + 5);
-            ctx.fillText(minVal.toString(), padding - 6, h - padding);
-
-            if (showParLine) {
-                const parY = h - padding - ((coursePar - minVal) / (maxVal - minVal)) * graphHeight;
-                if (parY >= padding && parY <= h - padding) {
-                    ctx.save();
-                    ctx.strokeStyle = "#94a3b8";
-                    ctx.lineWidth = 1.5;
-                    ctx.setLineDash([5, 5]);
-                    ctx.beginPath();
-                    ctx.moveTo(padding, parY);
-                    ctx.lineTo(w - padding, parY);
-                    ctx.stroke();
-                    ctx.restore();
-
-                    ctx.fillStyle = "#64748b";
-                    ctx.font = "bold 9px sans-serif";
-                    ctx.textAlign = "left";
-                    ctx.fillText(`PAR (${coursePar})`, w - padding + 4, parY + 3);
-                }
-            }
-
-            const points = data.map((d, idx) => {
-                const x = padding + (graphWidth / (data.length > 1 ? data.length - 1 : 1)) * (data.length > 1 ? idx : 0.5);
-                const y = h - padding - ((d.val - minVal) / (maxVal - minVal)) * graphHeight;
-                return { x, y, val: d.val, date: d.date };
-            });
-
-            if (showParLine) {
-                chartPoints = points;
-            }
-
-            if (points.length > 0 && showParLine) {
-                const gradient = ctx.createLinearGradient(0, padding, 0, h - padding);
-                gradient.addColorStop(0, "rgba(16, 185, 129, 0.35)");
-                gradient.addColorStop(1, "rgba(16, 185, 129, 0.02)");
-
-                ctx.beginPath();
-                ctx.moveTo(points[0].x, h - padding);
-                points.forEach(p => ctx.lineTo(p.x, p.y));
-                ctx.lineTo(points[points.length - 1].x, h - padding);
-                ctx.closePath();
-                ctx.fillStyle = gradient;
-                ctx.fill();
-            }
+            ctx.textBaseline = "middle";
+            ctx.fillText(maxVal.toString(), padding - 5, padding + 5);
+            ctx.fillText(minVal.toString(), padding - 5, h - padding);
 
             ctx.strokeStyle = lineColor;
             ctx.lineWidth = 2.5;
             ctx.beginPath();
-            points.forEach((p, idx) => {
-                if (idx === 0) ctx.moveTo(p.x, p.y);
-                else ctx.lineTo(p.x, p.y);
+
+            data.forEach((d, idx) => {
+                const x = padding + (graphWidth / (data.length > 1 ? data.length - 1 : 1)) * (data.length > 1 ? idx : 0.5);
+                const y = h - padding - ((d.val - minVal) / (maxVal - minVal)) * graphHeight;
+
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             });
             ctx.stroke();
 
-            points.forEach(p => {
+            data.forEach((d, idx) => {
+                const x = padding + (graphWidth / (data.length > 1 ? data.length - 1 : 1)) * (data.length > 1 ? idx : 0.5);
+                const y = h - padding - ((d.val - minVal) / (maxVal - minVal)) * graphHeight;
+
                 ctx.fillStyle = dotColor;
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
 
-                ctx.fillStyle = "#0f172a";
-                ctx.font = "bold 9px sans-serif";
+                ctx.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
+                ctx.font = "bold 9px -apple-system, BlinkMacSystemFont, sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText(p.val.toString(), p.x, p.y - 8);
+                ctx.textBaseline = "bottom";
+                ctx.fillText(d.val.toString(), x, y - 6);
             });
         }
 
-        function drawDonutChart(ctx, w, h, counts) {
-            const totalScores = Object.values(counts).reduce((a, b) => a + b, 0);
+        function drawBarChart(ctx, w, h, counts) {
+            const padding = 35;
+            const graphWidth = w - padding * 2;
+            const graphHeight = h - padding * 2;
+            const isDark = appState.theme === 'dark';
 
             const categories = [
-                { key: 'eagle', label: 'Eagle-', color: '#854d0e', bg: '#fef08a' },
-                { key: 'birdie', label: 'Birdie', color: '#0369a1', bg: '#bae6fd' },
-                { key: 'par', label: 'Par', color: '#334155', bg: '#f1f5f9' },
-                { key: 'bogey', label: 'Bogey', color: '#c2410c', bg: '#ffedd5' },
-                { key: 'dbogey', label: 'D.Bogey+', color: '#b91c1c', bg: '#fee2e2' }
+                { key: 'eagle', label: 'Eagle-', color: isDark ? '#fef08a' : '#854d0e', bg: isDark ? '#713f12' : '#fef08a' },
+                { key: 'birdie', label: 'Birdie', color: isDark ? '#bae6fd' : '#0369a1', bg: isDark ? '#075985' : '#bae6fd' },
+                { key: 'par', label: 'Par', color: isDark ? '#f1f5f9' : '#334155', bg: isDark ? '#334155' : '#f1f5f9' },
+                { key: 'bogey', label: 'Bogey', color: isDark ? '#ffedd5' : '#c2410c', bg: isDark ? '#9a3412' : '#ffedd5' },
+                { key: 'dbogey', label: 'D.Bogey+', color: isDark ? '#fee2e2' : '#b91c1c', bg: isDark ? '#991b1b' : '#fee2e2' }
             ];
 
-            if (totalScores === 0) {
-                drawEmptyChart(ctx, w, h, "Keine Runden vorhanden");
-                return;
-            }
+            const maxCount = Math.max(...Object.values(counts), 1);
+            const barWidth = graphWidth / categories.length - 10;
 
-            const centerX = w * 0.38;
-            const centerY = h / 2;
-            const outerRadius = Math.min(w, h) * 0.38;
-            const innerRadius = outerRadius * 0.55;
+            ctx.strokeStyle = isDark ? "#334155" : "#cbd5e1";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, h - padding);
+            ctx.lineTo(w - padding, h - padding);
+            ctx.stroke();
 
-            let startAngle = -Math.PI / 2;
-            distDonutSlices = [];
-
-            categories.forEach(cat => {
+            categories.forEach((cat, idx) => {
                 const count = counts[cat.key];
-                if (count === 0) return;
-
-                const sliceAngle = (count / totalScores) * (Math.PI * 2);
-                const endAngle = startAngle + sliceAngle;
+                const barHeight = (count / maxCount) * graphHeight;
+                const x = padding + idx * (barWidth + 10) + 5;
+                const y = h - padding - barHeight;
 
                 ctx.fillStyle = cat.bg;
+                ctx.fillRect(x, y, barWidth, barHeight);
                 ctx.strokeStyle = cat.color;
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, barWidth, barHeight);
 
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle);
-                ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
+                if (count > 0) {
+                    ctx.fillStyle = cat.color;
+                    ctx.font = "bold 10px -apple-system, BlinkMacSystemFont, sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "bottom";
+                    ctx.fillText(count.toString(), x + barWidth / 2, y - 4);
+                }
 
-                distDonutSlices.push({
-                    centerX, centerY, innerRadius, outerRadius, startAngle, endAngle,
-                    label: cat.label, count: count,
-                    percent: ((count / totalScores) * 100).toFixed(1),
-                    color: cat.color, bg: cat.bg
-                });
-
-                startAngle = endAngle;
-            });
-
-            ctx.fillStyle = "#0f172a";
-            ctx.font = "bold 16px sans-serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(totalScores.toString(), centerX, centerY - 8);
-
-            ctx.fillStyle = "#64748b";
-            ctx.font = "10px sans-serif";
-            ctx.fillText("Löcher", centerX, centerY + 10);
-
-            const legendX = w * 0.68;
-            let legendY = h / 2 - (categories.length * 20) / 2 + 5;
-
-            categories.forEach(cat => {
-                const count = counts[cat.key];
-                const percent = totalScores > 0 ? ((count / totalScores) * 100).toFixed(0) : 0;
-
-                ctx.fillStyle = cat.bg;
-                ctx.strokeStyle = cat.color;
-                ctx.lineWidth = 1.5;
-                ctx.fillRect(legendX, legendY, 12, 12);
-                ctx.strokeRect(legendX, legendY, 12, 12);
-
-                ctx.fillStyle = "#0f172a";
-                ctx.font = "11px sans-serif";
-                ctx.textAlign = "left";
-                ctx.textBaseline = "middle";
-                ctx.fillText(`${cat.label}: ${count} (${percent}%)`, legendX + 18, legendY + 6);
-
-                legendY += 22;
+                ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
+                ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "top";
+                ctx.fillText(cat.label, x + barWidth / 2, h - padding + 6);
             });
         }
 
         function drawParTypeChart(ctx, w, h, parStats) {
+            const padding = 35;
+            const graphWidth = w - padding * 2;
+            const graphHeight = h - padding * 2;
+            const isDark = appState.theme === 'dark';
+
             const types = [
                 { par: 3, label: 'Par 3' },
                 { par: 4, label: 'Par 4' },
@@ -1905,268 +2099,50 @@
                 return;
             }
 
-            const centerX = w / 2;
-            const centerY = h / 2 + 10;
-            const maxRadius = Math.min(w, h) * 0.32;
+            let maxVal = Math.max(...validAverages, 1);
+            let minVal = Math.min(...validAverages, 0);
+            if (minVal > 0) minVal = 0;
 
-            const maxVal = Math.max(...validAverages, 1.5, 3.0);
-            const numRings = 3;
+            const barWidth = graphWidth / types.length - 30;
 
-            ctx.strokeStyle = "#e2e8f0";
+            ctx.strokeStyle = isDark ? "#334155" : "#cbd5e1";
             ctx.lineWidth = 1;
-
-            for (let r = 1; r <= numRings; r++) {
-                const radius = (maxRadius / numRings) * r;
-                ctx.beginPath();
-                types.forEach((_, idx) => {
-                    const angle = (Math.PI * 2 / types.length) * idx - Math.PI / 2;
-                    const x = centerX + Math.cos(angle) * radius;
-                    const y = centerY + Math.sin(angle) * radius;
-                    if (idx === 0) ctx.moveTo(x, y);
-                    else ctx.lineTo(x, y);
-                });
-                ctx.closePath();
-                ctx.stroke();
-
-                const ringVal = ((maxVal / numRings) * r).toFixed(1);
-                ctx.fillStyle = "#94a3b8";
-                ctx.font = "8px sans-serif";
-                ctx.textAlign = "left";
-                ctx.fillText(`+${ringVal}`, centerX + 4, centerY - radius + 3);
-            }
+            ctx.beginPath();
+            ctx.moveTo(padding, h - padding);
+            ctx.lineTo(w - padding, h - padding);
+            ctx.stroke();
 
             types.forEach((t, idx) => {
-                const angle = (Math.PI * 2 / types.length) * idx - Math.PI / 2;
-                const x = centerX + Math.cos(angle) * maxRadius;
-                const y = centerY + Math.sin(angle) * maxRadius;
+                const avg = averages[idx];
+                const x = padding + idx * (barWidth + 30) + 15;
 
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.lineTo(x, y);
-                ctx.stroke();
+                if (avg !== null) {
+                    const barHeight = (avg / maxVal) * graphHeight;
+                    const y = h - padding - barHeight;
 
-                const labelRadius = maxRadius + 18;
-                const lx = centerX + Math.cos(angle) * labelRadius;
-                const ly = centerY + Math.sin(angle) * labelRadius;
+                    ctx.fillStyle = avg <= 1 ? (isDark ? "#075985" : "#bae6fd") : (isDark ? "#9a3412" : "#ffedd5");
+                    ctx.fillRect(x, y, barWidth, barHeight);
+                    ctx.strokeStyle = avg <= 1 ? (isDark ? "#38bdf8" : "#0369a1") : (isDark ? "#fb923c" : "#c2410c");
+                    ctx.strokeRect(x, y, barWidth, barHeight);
 
-                ctx.fillStyle = "#0f172a";
-                ctx.font = "bold 11px sans-serif";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(t.label, lx, ly);
-            });
-
-            const points = types.map((_, idx) => {
-                const avg = averages[idx] !== null ? averages[idx] : 0;
-                const clampedVal = Math.max(0, Math.min(avg, maxVal));
-                const radius = (clampedVal / maxVal) * maxRadius;
-                const angle = (Math.PI * 2 / types.length) * idx - Math.PI / 2;
-
-                return {
-                    x: centerX + Math.cos(angle) * radius,
-                    y: centerY + Math.sin(angle) * radius,
-                    avg: averages[idx]
-                };
-            });
-
-            ctx.beginPath();
-            points.forEach((p, idx) => {
-                if (idx === 0) ctx.moveTo(p.x, p.y);
-                else ctx.lineTo(p.x, p.y);
-            });
-            ctx.closePath();
-
-            ctx.fillStyle = "rgba(2, 132, 199, 0.25)";
-            ctx.fill();
-
-            ctx.strokeStyle = "#0284c7";
-            ctx.lineWidth = 2.5;
-            ctx.stroke();
-
-            points.forEach(p => {
-                ctx.fillStyle = "#0369a1";
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-
-                if (p.avg !== null) {
-                    const text = (p.avg >= 0 ? "+" : "") + p.avg;
-                    ctx.fillStyle = "#0f172a";
-                    ctx.font = "bold 10px sans-serif";
+                    ctx.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
+                    ctx.font = "bold 10px -apple-system, BlinkMacSystemFont, sans-serif";
                     ctx.textAlign = "center";
-                    ctx.textBaseline = "middle";
-                    ctx.fillText(text, p.x, p.y - 10);
-                }
-            });
-        }
-
-        /* HOVER INTERAKTIONEN FÜR DIAGRAMME */
-        function initTrendChartHover() {
-            const canvas = document.getElementById('trend-canvas');
-            if (!canvas) return;
-
-            let hoverTooltip = null;
-
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
-
-                const hit = chartPoints.find(p => {
-                    const dx = mouseX - p.x;
-                    const dy = mouseY - p.y;
-                    return Math.sqrt(dx * dx + dy * dy) <= 12;
-                });
-
-                if (hit) {
-                    canvas.style.cursor = 'pointer';
-                    hoverTooltip = hit;
-                } else {
-                    canvas.style.cursor = 'default';
-                    hoverTooltip = null;
+                    ctx.textBaseline = "bottom";
+                    ctx.fillText((avg >= 0 ? "+" : "") + avg + " Schläge", x + barWidth / 2, y - 4);
                 }
 
-                const mode = document.getElementById('global-mode-select').value;
-                renderCharts(mode);
-
-                if (hoverTooltip) {
-                    drawTrendTooltip(canvas.getContext('2d'), hoverTooltip);
-                }
+                ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
+                ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "top";
+                ctx.fillText(t.label, x + barWidth / 2, h - padding + 6);
             });
-
-            canvas.addEventListener('mouseleave', () => {
-                canvas.style.cursor = 'default';
-                const mode = document.getElementById('global-mode-select').value;
-                renderCharts(mode);
-            });
-        }
-
-        function drawTrendTooltip(ctx, point) {
-            const text = `${point.date}: ${point.val} ${document.getElementById('global-mode-select').value === 'brutto' ? 'Schläge' : 'Pkt'}`;
-            ctx.font = 'bold 11px sans-serif';
-            const textWidth = ctx.measureText(text).width;
-            const padding = 8;
-            const boxWidth = textWidth + padding * 2;
-            const boxHeight = 24;
-
-            let boxX = point.x - boxWidth / 2;
-            let boxY = point.y - boxHeight - 12;
-
-            if (boxX < 5) boxX = 5;
-            if (boxX + boxWidth > ctx.canvas.width / (window.devicePixelRatio || 1) - 5) boxX = ctx.canvas.width / (window.devicePixelRatio || 1) - boxWidth - 5;
-            if (boxY < 5) boxY = point.y + 12;
-
-            ctx.fillStyle = '#f59e0b';
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            ctx.fillStyle = '#0f172a';
-            ctx.beginPath();
-            ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 6);
-            ctx.fill();
-
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, boxX + boxWidth / 2, boxY + boxHeight / 2);
-        }
-
-        function initBarChartHover() {
-            const canvas = document.getElementById('distribution-canvas');
-            if (!canvas) return;
-
-            let hoveredSlice = null;
-
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
-
-                hoveredSlice = null;
-
-                if (distDonutSlices.length > 0) {
-                    const { centerX, centerY, innerRadius, outerRadius } = distDonutSlices[0];
-                    const dx = mouseX - centerX;
-                    const dy = mouseY - centerY;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance >= innerRadius && distance <= outerRadius) {
-                        let angle = Math.atan2(dy, dx);
-                        if (angle < -Math.PI / 2) angle += Math.PI * 2;
-
-                        hoveredSlice = distDonutSlices.find(s => {
-                            return angle >= s.startAngle && angle <= s.endAngle;
-                        });
-                    }
-                }
-
-                const ctx = canvas.getContext('2d');
-                const mode = document.getElementById('global-mode-select').value;
-                renderCharts(mode);
-
-                if (hoveredSlice) {
-                    canvas.style.cursor = 'pointer';
-                    drawDonutTooltip(ctx, hoveredSlice);
-                } else {
-                    canvas.style.cursor = 'default';
-                }
-            });
-
-            canvas.addEventListener('mouseleave', () => {
-                canvas.style.cursor = 'default';
-                const mode = document.getElementById('global-mode-select').value;
-                renderCharts(mode);
-            });
-        }
-
-        function drawDonutTooltip(ctx, slice) {
-            ctx.save();
-            ctx.fillStyle = slice.color;
-            ctx.beginPath();
-            ctx.arc(slice.centerX, slice.centerY, slice.outerRadius + 4, slice.startAngle, slice.endAngle);
-            ctx.arc(slice.centerX, slice.centerY, slice.innerRadius - 2, slice.endAngle, slice.startAngle, true);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-
-            const text = `${slice.label}: ${slice.count}x (${slice.percent}%)`;
-            ctx.font = 'bold 11px sans-serif';
-            const textWidth = ctx.measureText(text).width;
-            const padding = 8;
-            const boxWidth = textWidth + padding * 2;
-            const boxHeight = 24;
-
-            const midAngle = (slice.startAngle + slice.endAngle) / 2;
-            const tooltipRadius = slice.outerRadius + 20;
-            let boxX = slice.centerX + Math.cos(midAngle) * tooltipRadius - boxWidth / 2;
-            let boxY = slice.centerY + Math.sin(midAngle) * tooltipRadius - boxHeight / 2;
-
-            if (boxX < 5) boxX = 5;
-            if (boxX + boxWidth > ctx.canvas.width / (window.devicePixelRatio || 1) - 5) boxX = ctx.canvas.width / (window.devicePixelRatio || 1) - boxWidth - 5;
-            if (boxY < 5) boxY = 5;
-            if (boxY + boxHeight > ctx.canvas.height / (window.devicePixelRatio || 1) - 5) boxY = ctx.canvas.height / (window.devicePixelRatio || 1) - boxHeight - 5;
-
-            ctx.fillStyle = '#0f172a';
-            ctx.beginPath();
-            ctx.roundRect(boxX, boxY, boxWidth, boxHeight, 6);
-            ctx.fill();
-
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(text, boxX + boxWidth / 2, boxY + boxHeight / 2);
         }
 
         function renderHistory() {
             const tbody = document.getElementById('history-tbody');
+            if (!tbody) return;
             tbody.innerHTML = '';
             const playerId = appState.activePlayerId;
             
@@ -2176,21 +2152,22 @@
             }
             
             const player = appState.players[playerId];
+            
             player.rounds.forEach(round => {
                 let frontSum = 0, backSum = 0;
-                for(let i=0; i<9; i++) if (round.scores[i]) frontSum += round.scores[i];
-                for(let i=9; i<18; i++) if (round.scores[i]) backSum += round.scores[i];
+                for(let i=0; i<9; i++) if (round.scores && round.scores[i]) frontSum += round.scores[i];
+                for(let i=9; i<18; i++) if (round.scores && round.scores[i]) backSum += round.scores[i];
                 let totalSum = frontSum + backSum;
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${round.date}</strong></td>
+                    <td><strong>${escapeHTML(round.date)}</strong></td>
                     <td>HCPI: ${round.hcp}</td>
-                    <td><small>${round.type || '18-Loch'}</small></td>
+                    <td><small>${escapeHTML(round.type || '18-Loch')}</small></td>
                     <td>${frontSum > 0 ? frontSum : '-'}</td>
                     <td>${backSum > 0 ? backSum : '-'}</td>
                     <td><strong>${totalSum > 0 ? totalSum : '-'}</strong></td>
-                    <td><button class="delete-btn" title="Runde löschen" onclick="deleteRound('${round.id}')">🗑️ Löschen</button></td>
+                    <td><button class="delete-btn" title="Runde löschen" onclick="deleteRound('${escapeHTML(round.id)}')">🗑️ Löschen</button></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -2206,8 +2183,243 @@
             }
         }
 
+        function generateAddScoreInputs() {
+            const frontGrid = document.getElementById('add-score-front');
+            const backGrid = document.getElementById('add-score-back');
+            if (!frontGrid || !backGrid) return;
+            
+            frontGrid.innerHTML = '';
+            backGrid.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                frontGrid.innerHTML += createScoreInputHTML(i);
+            }
+            for (let i = 9; i < 18; i++) {
+                backGrid.innerHTML += createScoreInputHTML(i);
+            }
+            updateLiveSum();
+        }
+
+        function createScoreInputHTML(index) {
+            const holePar = appState.courseSetup.par[index] || 4;
+            return `
+                <div class="score-field">
+                    <label>Loch ${index + 1} <small style="opacity:0.7;">(P:${holePar})</small></label>
+                    <input type="number" 
+                           id="input-hole-${index}" 
+                           min="1" 
+                           max="15" 
+                           inputmode="numeric" 
+                           pattern="[0-9]*" 
+                           placeholder="${holePar}" 
+                           onfocus="setActiveHoleIndex(${index})"
+                           oninput="handleScoreInput(event, ${index})">
+                </div>`;
+        }
+
+        function setActiveHoleIndex(index) {
+            currentFocusedHoleIndex = index;
+            for (let i = 0; i < 18; i++) {
+                const el = document.getElementById(`input-hole-${i}`);
+                if (el) {
+                    if (i === index) el.classList.add('active-field');
+                    else el.classList.remove('active-field');
+                }
+            }
+        }
+
+        function handleScoreInput(event, holeIndex) {
+            const input = event.target;
+            const val = parseInt(input.value, 10);
+
+            if (!isNaN(val) && val >= 1 && val <= 15) {
+                input.classList.add('filled');
+                input.classList.remove('input-error');
+
+                if (holeIndex < 17) {
+                    const nextInput = document.getElementById(`input-hole-${holeIndex + 1}`);
+                    if (nextInput) {
+                        if (holeIndex === 8) {
+                            switchSubTab('add', 'back');
+                        }
+                        setTimeout(() => {
+                            nextInput.focus();
+                            setActiveHoleIndex(holeIndex + 1);
+                        }, 50);
+                    }
+                }
+            } else {
+                input.classList.remove('filled');
+            }
+
+            updateLiveSum();
+        }
+
+        function applyQuickScore(deltaOrAction) {
+            const holeIndex = currentFocusedHoleIndex;
+            const input = document.getElementById(`input-hole-${holeIndex}`);
+            if (!input) return;
+
+            if (deltaOrAction === 'clear') {
+                input.value = '';
+                input.classList.remove('filled', 'input-error');
+            } else {
+                const holePar = appState.courseSetup.par[holeIndex] || 4;
+                const scoreVal = holePar + deltaOrAction;
+                input.value = scoreVal;
+                input.classList.add('filled');
+                input.classList.remove('input-error');
+
+                if (holeIndex < 17) {
+                    const nextIndex = holeIndex + 1;
+                    if (holeIndex === 8) switchSubTab('add', 'back');
+                    
+                    setTimeout(() => {
+                        const nextInput = document.getElementById(`input-hole-${nextIndex}`);
+                        if (nextInput) {
+                            nextInput.focus();
+                            setActiveHoleIndex(nextIndex);
+                        }
+                    }, 50);
+                }
+            }
+            
+            updateLiveSum();
+        }
+
+        function updateLiveSum() {
+            let frontSum = 0;
+            let backSum = 0;
+            let hasFront = false;
+            let hasBack = false;
+
+            for (let i = 0; i < 9; i++) {
+                const el = document.getElementById(`input-hole-${i}`);
+                if (el) {
+                    const val = parseInt(el.value, 10);
+                    if (!isNaN(val) && val > 0) {
+                        frontSum += val;
+                        hasFront = true;
+                    }
+                }
+            }
+
+            for (let i = 9; i < 18; i++) {
+                const el = document.getElementById(`input-hole-${i}`);
+                if (el) {
+                    const val = parseInt(el.value, 10);
+                    if (!isNaN(val) && val > 0) {
+                        backSum += val;
+                        hasBack = true;
+                    }
+                }
+            }
+
+            const totalSum = frontSum + backSum;
+
+            const sumFrontEl = document.getElementById('sum-front');
+            const sumBackEl = document.getElementById('sum-back');
+            const sumTotalEl = document.getElementById('sum-total');
+
+            if (sumFrontEl) sumFrontEl.innerText = hasFront ? frontSum : '-';
+            if (sumBackEl) sumBackEl.innerText = hasBack ? backSum : '-';
+            if (sumTotalEl) sumTotalEl.innerText = (hasFront || hasBack) ? totalSum : '-';
+        }
+
+        function saveRound() {
+            const playerId = appState.activePlayerId;
+            if (!playerId) { 
+                alert("Bitte wähle zuerst einen Spieler in der Seitenleiste aus!"); 
+                return; 
+            }
+            
+            const dateEl = document.getElementById('round-date');
+            const hcpEl = document.getElementById('round-hcp');
+            const date = dateEl ? dateEl.value : '';
+            const hcp = hcpEl ? parseFloat(hcpEl.value) : NaN;
+            
+            if (!date || isNaN(hcp)) { 
+                alert("Bitte gib ein gültiges Datum und tagesaktuelles Handicap an!"); 
+                return; 
+            }
+            
+            let scores = [];
+            let frontCount = 0;
+            let backCount = 0;
+            let invalidHole = null;
+
+            for (let i = 0; i < 18; i++) {
+                const inputEl = document.getElementById(`input-hole-${i}`);
+                const rawVal = inputEl ? inputEl.value.trim() : '';
+                
+                if (rawVal !== '') {
+                    const val = parseInt(rawVal, 10);
+                    if (isNaN(val) || val < 1 || val > 15) {
+                        invalidHole = i;
+                        break;
+                    }
+                    scores.push(val);
+                    if (i < 9) frontCount++;
+                    else backCount++;
+                } else {
+                    scores.push(null);
+                }
+            }
+            
+            if (invalidHole !== null) {
+                const inputEl = document.getElementById(`input-hole-${invalidHole}`);
+                if (invalidHole < 9) switchSubTab('add', 'front');
+                else switchSubTab('add', 'back');
+                
+                setTimeout(() => {
+                    if (inputEl) {
+                        inputEl.classList.add('input-error');
+                        inputEl.focus();
+                    }
+                }, 100);
+                
+                alert(`Ungültige Eingabe an Loch ${invalidHole + 1}. Bitte gib einen Wert zwischen 1 und 15 ein.`);
+                return;
+            }
+
+            if (frontCount === 0 && backCount === 0) { 
+                alert("Bitte trage für mindestens ein Loch die Schlaganzahl ein."); 
+                return; 
+            }
+
+            let roundType = '18-Loch';
+            if (frontCount > 0 && backCount === 0) roundType = 'Front Nine (1-9)';
+            else if (frontCount === 0 && backCount > 0) roundType = 'Back Nine (10-18)';
+            else if (frontCount < 9 || backCount < 9) roundType = 'Teilrunde';
+
+            if (!appState.players[playerId].rounds) {
+                appState.players[playerId].rounds = [];
+            }
+            
+            appState.players[playerId].rounds.push({ 
+                id: 'r_' + Date.now(), 
+                date: date, 
+                hcp: hcp, 
+                type: roundType,
+                scores: scores 
+            });
+            
+            for (let i = 0; i < 18; i++) {
+                const el = document.getElementById(`input-hole-${i}`);
+                if (el) {
+                    el.value = '';
+                    el.classList.remove('filled', 'input-error', 'active-field');
+                }
+            }
+            
+            updateLiveSum();
+            saveToStorage();
+            switchMainTab('matrix');
+        }
+
         function renderSetupTable() {
             const table = document.getElementById('setup-table');
+            if (!table) return;
             const range = appState.subTabs.setup;
             let start = 0, end = 9;
             if (range === 'back') { start = 9; end = 18; }
@@ -2216,11 +2428,11 @@
             for (let i = start; i < end; i++) { html += `<th>Loch ${i+1}</th>`; }
             html += `</tr></thead><tbody><tr><td class="text-left"><strong>PAR-Vorgabe</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td><input type="number" id="setup-par-${i}" value="${appState.courseSetup.par[i]}" min="3" max="6" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
+                html += `<td><input type="number" id="setup-par-${i}" value="${appState.courseSetup.par[i] || 4}" min="3" max="6" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
             }
             html += `</tr><tr><td class="text-left"><strong>HCPI-Schwierigkeitsindex (1-18)</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td><input type="number" id="setup-hcpi-${i}" value="${appState.courseSetup.hcpIndex[i]}" min="1" max="18" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
+                html += `<td><input type="number" id="setup-hcpi-${i}" value="${appState.courseSetup.hcpIndex[i] || 18}" min="1" max="18" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
             }
             html += `</tr></tbody>`;
             table.innerHTML = html;
@@ -2233,12 +2445,16 @@
 
                 if (parEl) {
                     const parVal = parseInt(parEl.value, 10);
-                    if (!isNaN(parVal) && parVal >= 3 && parVal <= 6) appState.courseSetup.par[i] = parVal;
+                    if (!isNaN(parVal) && parVal >= 3 && parVal <= 6) {
+                        appState.courseSetup.par[i] = parVal;
+                    }
                 }
 
                 if (hcpiEl) {
                     const hcpiVal = parseInt(hcpiEl.value, 10);
-                    if (!isNaN(hcpiVal) && hcpiVal >= 1 && hcpiVal <= 18) appState.courseSetup.hcpIndex[i] = hcpiVal;
+                    if (!isNaN(hcpiVal) && hcpiVal >= 1 && hcpiVal <= 18) {
+                        appState.courseSetup.hcpIndex[i] = hcpiVal;
+                    }
                 }
             }
             saveToStorage();
@@ -2270,6 +2486,7 @@
                     if (importedState.players && importedState.courseSetup) {
                         appState = importedState;
                         saveToStorage();
+                        applyTheme();
                         updateViews();
                         alert("Backup erfolgreich wiederhergestellt!");
                     } else { alert("Ungültiges Dateiformat!"); }
@@ -2287,7 +2504,10 @@
                 try {
                     const text = e.target.result;
                     const lines = text.split(/\r\n|\n/).filter(line => line.trim() !== '');
-                    if (lines.length < 2) { alert("CSV-Datei enthält keine Datenzeilen."); return; }
+                    if (lines.length < 2) {
+                        alert("CSV-Datei enthält keine Datenzeilen.");
+                        return;
+                    }
                     
                     const firstLine = lines[0];
                     const sep = firstLine.includes(';') ? ';' : ',';
@@ -2303,12 +2523,17 @@
                         return;
                     }
 
-                    let holeIndicesFront = [], holeIndicesBack = [];
+                    let holeIndicesFront = [];
+                    let holeIndicesBack = [];
+                    
                     for (let holeNum = 1; holeNum <= 9; holeNum++) {
-                        holeIndicesFront.push(headers.findIndex(h => h === `l${holeNum}` || h === `loch${holeNum}` || h === `loch ${holeNum}` || h === `${holeNum}`));
+                        let idx = headers.findIndex(h => h === `l${holeNum}` || h === `loch${holeNum}` || h === `loch ${holeNum}` || h === `${holeNum}`);
+                        holeIndicesFront.push(idx);
                     }
+                    
                     for (let holeNum = 10; holeNum <= 18; holeNum++) {
-                        holeIndicesBack.push(headers.findIndex(h => h === `l${holeNum}` || h === `loch${holeNum}` || h === `loch ${holeNum}` || h === `${holeNum}`));
+                        let idx = headers.findIndex(h => h === `l${holeNum}` || h === `loch${holeNum}` || h === `loch ${holeNum}` || h === `${holeNum}`);
+                        holeIndicesBack.push(idx);
                     }
 
                     let importedRoundsCount = 0;
@@ -2326,6 +2551,7 @@
 
                         const isFront = nineVal.includes('front') || nineVal.includes('1-9') || nineVal === 'f';
                         const isBack = nineVal.includes('back') || nineVal.includes('10-18') || nineVal === 'b';
+
                         if (!isFront && !isBack) continue;
 
                         let playerObj = Object.values(appState.players).find(p => p.name.toLowerCase() === playerName.toLowerCase());
@@ -2346,14 +2572,18 @@
                                 scores: Array(18).fill(null)
                             };
                             playerObj.rounds.push(existingRound);
-                        } else { existingRound.hcp = rawHcp; }
+                        } else {
+                            existingRound.hcp = rawHcp;
+                        }
 
                         const startHoleOffset = isFront ? 0 : 9;
                         const targetIndices = isFront ? holeIndicesFront : holeIndicesBack;
 
                         for (let h = 0; h < 9; h++) {
                             let colIdx = targetIndices[h];
-                            if (colIdx === -1 && isBack) colIdx = holeIndicesFront[h];
+                            if (colIdx === -1 && isBack) {
+                                colIdx = holeIndicesFront[h];
+                            }
                             
                             if (colIdx !== -1 && colIdx < cols.length) {
                                 const scoreVal = parseInt(cols[colIdx], 10);
@@ -2362,6 +2592,7 @@
                                 }
                             }
                         }
+
                         importedRoundsCount++;
                     }
 
@@ -2369,10 +2600,12 @@
                         saveToStorage();
                         updateViews();
                         alert(`${importedRoundsCount} Datensätze erfolgreich aus der CSV-Datei importiert!`);
-                    } else { alert("Es konnten keine gültigen Runden aus der CSV-Datei gelesen werden."); }
+                    } else {
+                        alert("Es konnten keine gültigen Runden aus der CSV-Datei gelesen werden.");
+                    }
 
                 } catch(err) {
-                    console.error(err);
+                    console.error("Fehler beim Verarbeiten der CSV:", err);
                     alert("Fehler beim Verarbeiten der CSV-Datei.");
                 }
             };
@@ -2381,7 +2614,8 @@
         }
 
         function exportLeaderboardExcel() {
-            const mode = document.getElementById('global-mode-select').value;
+            const modeSelect = document.getElementById('global-mode-select');
+            const mode = modeSelect ? modeSelect.value : 'brutto';
             const range = appState.subTabs.leaderboard;
             let start = 0, end = 18;
             if (range === 'front') { start = 0; end = 9; }
@@ -2396,6 +2630,7 @@
             };
 
             let exportData = [];
+            
             let headerRow = ["Platz", "Spieler"];
             for (let i = start; i < end; i++) headerRow.push("Loch " + (i + 1));
             headerRow.push("Gesamt (" + mode.toUpperCase() + ")");
@@ -2404,7 +2639,7 @@
             let parRow = ["-", "PAR-Vorgabe"];
             let parSum = 0;
             for (let i = start; i < end; i++) {
-                const parVal = appState.courseSetup.par[i];
+                const parVal = appState.courseSetup.par[i] || 4;
                 parRow.push(parVal);
                 parSum += parVal;
             }
@@ -2412,25 +2647,23 @@
             exportData.push(parRow);
 
             let hcpiRow = ["-", "HCPI-Lochindex"];
-            for (let i = start; i < end; i++) hcpiRow.push(appState.courseSetup.hcpIndex[i]);
+            for (let i = start; i < end; i++) {
+                hcpiRow.push(appState.courseSetup.hcpIndex[i] || 18);
+            }
             hcpiRow.push("-");
             exportData.push(hcpiRow);
 
-            // Profilwerte berechnen & NUR Spieler mit Runden filtern
-            let rankedPlayers = Object.values(appState.players)
-                .map(player => {
-                    const profile = getEclecticProfile(player.id);
-                    let total = 0, hasPlayed = false;
-                    for (let i = start; i < end; i++) {
-                        const val = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
-                        if (val !== null) { total += val; hasPlayed = true; }
-                    }
-                    return { name: player.name, profile: profile, total: total, hasPlayed: hasPlayed };
-                })
-                .filter(player => player.hasPlayed); // NUR SPIELER MIT RUNDENERGEBNISSEN
-
-            // Aufsteigend nach der Gesamtanzahl sortieren
-            rankedPlayers.sort((a, b) => a.total - b.total);
+            let rankedPlayers = Object.values(appState.players || {}).map(player => {
+                const profile = getEclecticProfile(player.id);
+                let total = 0, hasPlayed = false;
+                for (let i = start; i < end; i++) {
+                    const val = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
+                    if (val !== null) { total += val; hasPlayed = true; }
+                }
+                return { name: player.name, profile: profile, total: total, hasPlayed: hasPlayed };
+            });
+            
+            rankedPlayers.sort((a, b) => mode === 'brutto' ? a.total - b.total : b.total - a.total);
             
             rankedPlayers.forEach((rp, idx) => {
                 let row = [idx + 1, rp.name];
@@ -2438,14 +2671,14 @@
                     const scoreVal = mode === 'brutto' ? rp.profile.brutto[i] : rp.profile.netto[i];
                     row.push(scoreVal !== null ? scoreVal : "-");
                 }
-                row.push(rp.total);
+                row.push(rp.hasPlayed ? rp.total : "-");
                 exportData.push(row);
             });
             
             const worksheet = XLSX.utils.aoa_to_sheet(exportData);
             
             const headerStyle = {
-                fill: { patternType: "solid", fgColor: { rgb: "0F172A" } },
+                fill: { patternType: "solid", fgColor: { rgb: "1E5338" } },
                 font: { bold: true, color: { rgb: "FFFFFF" } },
                 alignment: { horizontal: "center", vertical: "center" }
             };
@@ -2476,6 +2709,7 @@
 
             rankedPlayers.forEach((rp, rowIdx) => {
                 const excelRow = rowIdx + 3;
+                
                 const posAddr = XLSX.utils.encode_cell({ r: excelRow, c: 0 });
                 const nameAddr = XLSX.utils.encode_cell({ r: excelRow, c: 1 });
                 if (worksheet[posAddr]) worksheet[posAddr].s = { alignment: { horizontal: "center" } };
@@ -2485,7 +2719,7 @@
                     const colIdx = (i - start) + 2;
                     const cellAddress = XLSX.utils.encode_cell({ r: excelRow, c: colIdx });
                     const scoreVal = mode === 'brutto' ? rp.profile.brutto[i] : rp.profile.netto[i];
-                    const parVal = appState.courseSetup.par[i];
+                    const parVal = appState.courseSetup.par[i] || 4;
                     
                     if (worksheet[cellAddress]) {
                         if (scoreVal !== null) {
@@ -2496,8 +2730,12 @@
                                     font: { bold: true, color: { rgb: colorMap[colorClass].font } },
                                     alignment: { horizontal: "center", vertical: "center" }
                                 };
-                            } else { worksheet[cellAddress].s = { alignment: { horizontal: "center", vertical: "center" } }; }
-                        } else { worksheet[cellAddress].s = { alignment: { horizontal: "center", vertical: "center" } }; }
+                            } else {
+                                worksheet[cellAddress].s = { alignment: { horizontal: "center", vertical: "center" } };
+                            }
+                        } else {
+                            worksheet[cellAddress].s = { alignment: { horizontal: "center", vertical: "center" } };
+                        }
                     }
                 }
 
@@ -2517,10 +2755,14 @@
         }
 
         function exportSingleResultsExcel() {
-            const mode = document.getElementById('global-mode-select').value;
+            const modeSelect = document.getElementById('global-mode-select');
+            const mode = modeSelect ? modeSelect.value : 'brutto';
             const range = appState.subTabs.singles;
-            const selectedPlayerId = document.getElementById('singles-player-filter').value;
-            const selectedDate = document.getElementById('singles-date-filter').value;
+            
+            const playerFilter = document.getElementById('singles-player-filter');
+            const dateFilter = document.getElementById('singles-date-filter');
+            const selectedPlayerId = playerFilter ? playerFilter.value : 'ALL';
+            const selectedDate = dateFilter ? dateFilter.value : 'ALL';
 
             let start = 0, end = 18;
             if (range === 'front') { start = 0; end = 9; }
@@ -2535,24 +2777,15 @@
             };
 
             let allRounds = [];
-            Object.values(appState.players).forEach(player => {
+            Object.values(appState.players || {}).forEach(player => {
                 if (selectedPlayerId === 'ALL' || player.id === selectedPlayerId) {
                     if (player.rounds && player.rounds.length > 0) {
                         player.rounds.forEach(round => {
-                            if (selectedDate === 'ALL' || round.date.trim() === selectedDate) {
-                                // Prüfen, ob in diesem Lochbereich mindestens ein gültiger Score existiert
-                                let hasDataInRange = false;
-                                for (let i = start; i < end; i++) {
-                                    if (round.scores[i] !== null && round.scores[i] !== undefined && round.scores[i] > 0) {
-                                        hasDataInRange = true;
-                                        break;
-                                    }
-                                }
-
-                                // Nur hinzufügen, wenn tatsächlich Ergebnisse im Bereich vorliegen
-                                if (hasDataInRange) {
-                                    allRounds.push({ playerName: player.name, round: round });
-                                }
+                            if (selectedDate === 'ALL' || (round.date && round.date.trim() === selectedDate)) {
+                                allRounds.push({
+                                    playerName: player.name,
+                                    round: round
+                                });
                             }
                         });
                     }
@@ -2562,10 +2795,11 @@
             allRounds.sort((a, b) => {
                 const dateCompare = parseDateString(b.round.date) - parseDateString(a.round.date);
                 if (dateCompare !== 0) return dateCompare;
-                return a.playerName.localeCompare(b.playerName, 'de', { sensitivity: 'base' });
+                return (a.playerName || '').localeCompare(b.playerName || '', 'de', { sensitivity: 'base' });
             });
 
             let exportData = [];
+
             let headerRow = ["Spieler", "Datum", "HCPI"];
             for (let i = start; i < end; i++) headerRow.push("Loch " + (i + 1));
             headerRow.push("Gesamt (" + mode.toUpperCase() + ")");
@@ -2575,24 +2809,27 @@
                 const r = item.round;
                 let row = [item.playerName, r.date, r.hcp];
                 let sum = 0;
+                let hasData = false;
 
                 for (let i = start; i < end; i++) {
-                    const rawScore = r.scores[i];
+                    const rawScore = r.scores ? r.scores[i] : null;
                     if (rawScore !== null && rawScore !== undefined && rawScore > 0) {
-                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i], appState.courseSetup.hcpIndex[i], r.hcp);
+                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
                         row.push(cellVal);
                         sum += cellVal;
-                    } else { 
-                        row.push("-"); 
+                        hasData = true;
+                    } else {
+                        row.push("-");
                     }
                 }
-                row.push(sum);
+                row.push(hasData ? sum : "-");
                 exportData.push(row);
             });
 
             const worksheet = XLSX.utils.aoa_to_sheet(exportData);
+
             const headerStyle = {
-                fill: { patternType: "solid", fgColor: { rgb: "0F172A" } },
+                fill: { patternType: "solid", fgColor: { rgb: "1E5338" } },
                 font: { bold: true, color: { rgb: "FFFFFF" } },
                 alignment: { horizontal: "center", vertical: "center" }
             };
@@ -2605,17 +2842,19 @@
             allRounds.forEach((item, rowIdx) => {
                 const excelRow = rowIdx + 1;
                 const r = item.round;
+
                 const nameAddr = XLSX.utils.encode_cell({ r: excelRow, c: 0 });
                 if (worksheet[nameAddr]) worksheet[nameAddr].s = { font: { bold: true }, alignment: { horizontal: "left" } };
 
                 for (let i = start; i < end; i++) {
                     const colIdx = (i - start) + 3;
                     const cellAddress = XLSX.utils.encode_cell({ r: excelRow, c: colIdx });
-                    const rawScore = r.scores[i];
+                    const rawScore = r.scores ? r.scores[i] : null;
 
                     if (worksheet[cellAddress] && rawScore !== null && rawScore !== undefined && rawScore > 0) {
-                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i], appState.courseSetup.hcpIndex[i], r.hcp);
-                        const colorClass = getScoreColorClass(cellVal, appState.courseSetup.par[i], mode);
+                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
+                        const parVal = appState.courseSetup.par[i] || 4;
+                        const colorClass = getScoreColorClass(cellVal, parVal, mode);
 
                         if (colorMap[colorClass]) {
                             worksheet[cellAddress].s = {
@@ -2638,14 +2877,31 @@
             XLSX.writeFile(workbook, `einzelergebnisse_${range}_${mode}.xlsx`);
         }
 
+        window.addEventListener('resize', () => {
+            if (appState.currentMainTab === 'matrix' && appState.chartsExpanded) {
+                const modeSelect = document.getElementById('global-mode-select');
+                renderCharts(modeSelect ? modeSelect.value : 'brutto');
+            }
+        });
+
         window.onload = function() {
+            const roundDateInput = document.getElementById('round-date');
+            if (roundDateInput) {
+                roundDateInput.value = new Date().toISOString().split('T')[0];
+            }
+            
+            generateAddScoreInputs();
+            
             const localData = localStorage.getItem('eclectic_golf_pro_data');
             if (localData) {
-                try { 
-                    const loadedState = JSON.parse(localData);
-                    appState = { ...appState, ...loadedState };
-                } 
-                catch(e) { console.error("Fehler beim Laden aus localStorage:", e); }
+                try {
+                    const parsed = JSON.parse(localData);
+                    if (parsed && typeof parsed === 'object') {
+                        appState = Object.assign(appState, parsed);
+                    }
+                } catch(e) {
+                    console.error("Fehler beim Laden aus localStorage:", e);
+                }
             }
 
             if (appState.players && Object.keys(appState.players).length > 0) {
@@ -2654,24 +2910,15 @@
                 }
             }
             
-            initTrendChartHover();
-            initBarChartHover();
-
-            switchSubTab('leaderboard', appState.subTabs.leaderboard || 'all');
-            
-            const leaderboardTabBtn = document.getElementById('tab-leaderboard');
-            if (leaderboardTabBtn) {
-                leaderboardTabBtn.focus();
-            }
-            
+            applyTheme();
             updateViews();
         };
     </script>
 
-    <!-- FIREBASE CLOUD FIRESTORE INTEGRATION MIT OFFLINE PERSISTENCE -->
+    <!-- FIREBASE CLOUD FIRESTORE INTEGRATION -->
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-      import { getFirestore, enableIndexedDbPersistence, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+      import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyDeZUcvBhnMDOjeNnG954p7L653w1oFCB8",
@@ -2685,55 +2932,65 @@
 
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
-
-      enableIndexedDbPersistence(db).catch((err) => {
-          if (err.code == 'failed-precondition') {
-              console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time.");
-          } else if (err.code == 'unimplemented') {
-              console.warn("The current browser does not support offline persistence");
-          }
-      });
-
       const docRef = doc(db, "eclectic", "turnier_daten");
+
+      function setSyncStatus(isOnline) {
+          const dot = document.getElementById('sync-dot');
+          if (dot) {
+              dot.classList.toggle('online', isOnline);
+              dot.classList.toggle('offline', !isOnline);
+              dot.title = isOnline ? "Firebase verbunden" : "Offline / Keine Verbindung";
+          }
+      }
 
       window.saveToFirebase = async function(stateData) {
           try {
               await setDoc(docRef, {
-                  players: stateData.players,
-                  courseSetup: stateData.courseSetup
+                  players: stateData.players || {},
+                  courseSetup: stateData.courseSetup || {}
               });
-              console.log("Daten erfolgreich in Firebase Firestore gespeichert.");
+              setSyncStatus(true);
           } catch (e) {
               console.error("Fehler beim Speichern in Firebase: ", e);
+              setSyncStatus(false);
           }
       };
 
       onSnapshot(docRef, (docSnap) => {
+          setSyncStatus(true);
+          
+          if (isLocalSave) return;
+
           if (docSnap.exists()) {
               const data = docSnap.data();
-              if (data.players && data.courseSetup) {
-                  appState.players = data.players || {};
-                  appState.courseSetup = data.courseSetup || appState.courseSetup;
+              if (data && data.players && data.courseSetup) {
+                  appState.players = data.players;
+                  appState.courseSetup = data.courseSetup;
                   
                   if (!appState.activePlayerId || !appState.players[appState.activePlayerId]) {
                       const firstPlayerId = Object.keys(appState.players)[0];
                       appState.activePlayerId = firstPlayerId || null;
                   }
                   
-                  localStorage.setItem('eclectic_golf_pro_data', JSON.stringify(appState));
+                  try {
+                      localStorage.setItem('eclectic_golf_pro_data', JSON.stringify(appState));
+                  } catch(e) {
+                      console.error("localStorage Sync Error:", e);
+                  }
                   
-                  if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT')) {
+                  const activeTag = document.activeElement ? document.activeElement.tagName : '';
+                  if (activeTag === 'INPUT' || activeTag === 'SELECT') {
                       renderPlayerList();
                   } else {
                       updateViews();
                   }
               }
           } else {
-              console.log("Noch keine Daten in Firebase vorhanden. Initialisiere...");
               window.saveToFirebase(appState);
           }
       }, (error) => {
-          console.error("Firebase Fehler (Berechtigung oder Netzwerk):", error);
+          console.error("Firebase Snapshot Fehler:", error);
+          setSyncStatus(false);
       });
     </script>
 
@@ -2742,8 +2999,8 @@
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker erfolgreich registriert:', reg.scope))
-            .catch(err => console.error('Service Worker Fehler:', err));
+            .then(reg => console.log('Service Worker registriert:', reg.scope))
+            .catch(err => console.warn('Service Worker nicht geladen (optional):', err.message));
         });
       }
     </script>
