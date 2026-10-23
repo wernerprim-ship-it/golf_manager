@@ -621,6 +621,57 @@
         }
         table th:nth-child(2) { background-color: var(--bg-main); }
 
+        .entry-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .score-inputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .score-input-card {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .score-input-card label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .score-input-card span {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .score-input-card input {
+            width: 100%;
+            text-align: center;
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .score-input-card.disabled {
+            opacity: 0.4;
+            background: #e2e8f0;
+        }
+
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .mobile-menu-toggle { display: block; }
@@ -649,6 +700,7 @@
             .btn-submit { width: 100%; padding: 14px; }
             .filter-bar { flex-direction: column; align-items: stretch; }
             .charts-container { grid-template-columns: 1fr; }
+            .entry-grid { grid-template-columns: 1fr; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>    
@@ -660,7 +712,7 @@
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
 
     <div class="sidebar" id="app-sidebar">
-        <h2>🏌️ Eclectic Manager</h2>
+        <h2>🏌️ Eclectic Manager  1.2</h2>
         
         <div class="form-group">
             <label for="new-player-name">NEUEN SPIELER HINZUFÜGEN:</label>
@@ -715,6 +767,7 @@
             <button class="tab-btn active" id="tab-leaderboard" onclick="switchMainTab('leaderboard')">🏆 Gruppen-Leaderboard</button>
             <button class="tab-btn" id="tab-singles" onclick="switchMainTab('singles')">📋 Einzelergebnisse</button>
             <button class="tab-btn" id="tab-matrix" onclick="switchMainTab('matrix')">📊 Einzelspieler-Matrix</button>
+            <button class="tab-btn" id="tab-entry" onclick="switchMainTab('entry')">➕ Runde erfassen</button>
             <button class="tab-btn" id="tab-setup" onclick="switchMainTab('setup')">⚙️ Platz-Setup (PAR/HCPI)</button>
         </div>
 
@@ -827,7 +880,43 @@
             </div>
         </div>
 
-        <!-- 4. TAB: PLATZ-SETUP -->
+        <!-- 4. TAB: NEUE RUNDE ERFASSEN -->
+        <div id="view-entry" class="tab-content hidden">
+            <div class="card">
+                <h3>Neue Spielrunde erfassen</h3>
+                <div class="info-box">
+                    Erfassen Sie eine neue Runde für den aktuell gewählten Spieler (<strong id="entry-player-display">-</strong>). Die eingegebenen Scores fließen direkt in die Eclectic-Wertung ein.
+                </div>
+
+                <div class="entry-grid">
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:700;">Spieldatum:</label>
+                        <input type="date" id="entry-date" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-size:13px; outline:none;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:700;">Handicap Index (HCPI) dieser Runde:</label>
+                        <input type="number" id="entry-hcp" step="0.1" min="-10" max="54" placeholder="z.B. 18.4" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-size:13px; outline:none;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:6px; grid-column: span 2;">
+                        <label style="font-size:12px; font-weight:700;">Rundentyp:</label>
+                        <select id="entry-type" onchange="handleEntryTypeChange()" style="padding:8px 12px; border-radius:6px; border:1px solid var(--border); font-size:13px; outline:none; background:white;">
+                            <option value="18-Loch">18-Loch Runde (Gesamt)</option>
+                            <option value="Front-9">9-Loch Runde (Loch 1 - 9 / Front Nine)</option>
+                            <option value="Back-9">9-Loch Runde (Loch 10 - 18 / Back Nine)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h4 style="margin-top:20px; font-size:14px; border-bottom:1px solid var(--border); padding-bottom:8px;">Loch-Ergebnisse (Brutto-Schläge)</h4>
+                <div id="entry-scores-container" class="score-inputs-grid"></div>
+
+                <div class="btn-panel" style="margin-top: 24px;">
+                    <button class="btn-submit" onclick="submitNewRound()">Runde speichern</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. TAB: PLATZ-SETUP -->
         <div id="view-setup" class="tab-content hidden">
             <div class="card">
                 <h3>Platzkonfiguration</h3>
@@ -1069,6 +1158,7 @@
                 renderHistory(); 
                 updateChartsAccordionUI();
             }
+            else if (appState.currentMainTab === 'entry') renderEntryForm();
             else if (appState.currentMainTab === 'setup') renderSetupTable();
         }
 
@@ -1205,27 +1295,36 @@
             }
             html += `<th>Gesamt (${mode === 'brutto' ? 'Schläge' : 'Punkte'})</th></tr></thead><tbody>`;
             
-            let rankedPlayers = Object.values(appState.players).map(player => {
-                const profile = getEclecticProfile(player.id);
-                let total = 0, hasPlayed = false;
-                for (let i = start; i < end; i++) {
-                    const val = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
-                    if (val !== null) { total += val; hasPlayed = true; }
-                }
-                return {
-                    id: player.id,
-                    name: player.name,
-                    profile: profile,
-                    total: hasPlayed ? total : (mode === 'brutto' ? Infinity : -1),
-                    hasPlayed: hasPlayed
-                };
-            });
+            // Profilwerte berechnen & NUR Spieler mit Runden filtern
+            let rankedPlayers = Object.values(appState.players)
+                .map(player => {
+                    const profile = getEclecticProfile(player.id);
+                    let total = 0, hasPlayed = false;
+                    for (let i = start; i < end; i++) {
+                        const val = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
+                        if (val !== null) { total += val; hasPlayed = true; }
+                    }
+                    return {
+                        id: player.id,
+                        name: player.name,
+                        profile: profile,
+                        total: total,
+                        hasPlayed: hasPlayed
+                    };
+                })
+                .filter(player => player.hasPlayed); // Nur aktive Spieler anzeigen
+
+            // Aufsteigend nach der Gesamtanzahl sortieren
+            rankedPlayers.sort((a, b) => a.total - b.total);
             
-            rankedPlayers.sort((a, b) => mode === 'brutto' ? a.total - b.total : b.total - a.total);
-            
+            if (rankedPlayers.length === 0) {
+                html += `<tr><td colspan="${(end - start) + 3}" style="padding:16px; text-align:center; color:var(--text-muted);">Keine Rundenergebnisse vorhanden.</td></tr></tbody>`;
+                table.innerHTML = html;
+                return;
+            }
+
             rankedPlayers.forEach((rp, idx) => {
                 const isCurrent = rp.id === appState.activePlayerId ? 'highlight-row' : '';
-                const totalDisplay = rp.hasPlayed ? rp.total : '-';
                 
                 html += `<tr class="${isCurrent}">
                     <td>${idx + 1}</td>
@@ -1243,7 +1342,7 @@
                         html += `<td>-</td>`;
                     }
                 }
-                html += `<td><strong>${totalDisplay}</strong></td></tr>`;
+                html += `<td><strong>${rp.total}</strong></td></tr>`;
             });
             
             html += `</tbody>`;
@@ -1395,6 +1494,121 @@
             }
             html += `<td><strong>${hasEclectic ? eclecticSum : '-'}</strong></td></tr></tbody>`;
             table.innerHTML = html;
+        }
+
+        /* ERFASSUNGSMASKE LOGIK */
+        function renderEntryForm() {
+            const playerId = appState.activePlayerId;
+            const playerDisplay = document.getElementById('entry-player-display');
+            const dateInput = document.getElementById('entry-date');
+            const hcpInput = document.getElementById('entry-hcp');
+
+            if (!playerId || !appState.players[playerId]) {
+                playerDisplay.innerText = "Kein Spieler ausgewählt";
+                return;
+            }
+
+            const player = appState.players[playerId];
+            playerDisplay.innerText = player.name;
+
+            if (!dateInput.value) {
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.value = today;
+            }
+
+            if (!hcpInput.value && player.rounds && player.rounds.length > 0) {
+                const sorted = [...player.rounds].sort((a, b) => parseDateString(b.date) - parseDateString(a.date));
+                hcpInput.value = sorted[0].hcp;
+            }
+
+            handleEntryTypeChange();
+        }
+
+        function handleEntryTypeChange() {
+            const container = document.getElementById('entry-scores-container');
+            const roundType = document.getElementById('entry-type').value;
+            
+            container.innerHTML = '';
+
+            for (let i = 0; i < 18; i++) {
+                const isFront = i < 9;
+                const isBack = i >= 9;
+                let isDisabled = false;
+
+                if (roundType === 'Front-9' && isBack) isDisabled = true;
+                if (roundType === 'Back-9' && isFront) isDisabled = true;
+
+                const holeCard = document.createElement('div');
+                holeCard.className = `score-input-card ${isDisabled ? 'disabled' : ''}`;
+                holeCard.innerHTML = `
+                    <label>Loch ${i + 1}</label>
+                    <span>P:${appState.courseSetup.par[i]} | H:${appState.courseSetup.hcpIndex[i]}</span>
+                    <input type="number" id="entry-hole-${i}" min="1" max="15" ${isDisabled ? 'disabled' : ''} placeholder="-">
+                `;
+                container.appendChild(holeCard);
+            }
+        }
+
+        function submitNewRound() {
+            const playerId = appState.activePlayerId;
+            if (!playerId || !appState.players[playerId]) {
+                alert("Bitte wählen Sie zuerst einen Spieler aus.");
+                return;
+            }
+
+            const dateInput = document.getElementById('entry-date').value;
+            const hcpInput = parseFloat(document.getElementById('entry-hcp').value);
+            const roundType = document.getElementById('entry-type').value;
+
+            if (!dateInput) { alert("Bitte geben Sie ein gültiges Datum ein."); return; }
+            if (isNaN(hcpInput)) { alert("Bitte geben Sie ein gültiges Handicap ein."); return; }
+
+            let formattedDate = dateInput;
+            if (dateInput.includes('-')) {
+                const parts = dateInput.split('-');
+                if (parts.length === 3) formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+            }
+
+            let scores = Array(18).fill(null);
+            let hasValidScore = false;
+
+            for (let i = 0; i < 18; i++) {
+                const inputEl = document.getElementById(`entry-hole-${i}`);
+                if (inputEl && !inputEl.disabled && inputEl.value) {
+                    const scoreVal = parseInt(inputEl.value, 10);
+                    if (!isNaN(scoreVal) && scoreVal >= 1) {
+                        scores[i] = scoreVal;
+                        hasValidScore = true;
+                    }
+                }
+            }
+
+            if (!hasValidScore) {
+                alert("Bitte tragen Sie mindestens ein Loch-Ergebnis ein.");
+                return;
+            }
+
+            const newRound = {
+                id: 'r_' + Date.now(),
+                date: formattedDate,
+                hcp: hcpInput,
+                type: roundType,
+                scores: scores
+            };
+
+            const player = appState.players[playerId];
+            if (!player.rounds) player.rounds = [];
+            player.rounds.push(newRound);
+
+            saveToStorage();
+            alert(`Runde für ${player.name} erfolgreich gespeichert!`);
+            
+            for (let i = 0; i < 18; i++) {
+                const inputEl = document.getElementById(`entry-hole-${i}`);
+                if (inputEl) inputEl.value = '';
+            }
+
+            switchMainTab('matrix');
         }
 
         /* DIAGRAMME RENDERN MIT RETINA-SUPPORT */
@@ -2202,17 +2416,21 @@
             hcpiRow.push("-");
             exportData.push(hcpiRow);
 
-            let rankedPlayers = Object.values(appState.players).map(player => {
-                const profile = getEclecticProfile(player.id);
-                let total = 0, hasPlayed = false;
-                for (let i = start; i < end; i++) {
-                    const val = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
-                    if (val !== null) { total += val; hasPlayed = true; }
-                }
-                return { name: player.name, profile: profile, total: total, hasPlayed: hasPlayed };
-            });
-            
-            rankedPlayers.sort((a, b) => mode === 'brutto' ? a.total - b.total : b.total - a.total);
+            // Profilwerte berechnen & NUR Spieler mit Runden filtern
+            let rankedPlayers = Object.values(appState.players)
+                .map(player => {
+                    const profile = getEclecticProfile(player.id);
+                    let total = 0, hasPlayed = false;
+                    for (let i = start; i < end; i++) {
+                        const val = mode === 'brutto' ? profile.brutto[i] : profile.netto[i];
+                        if (val !== null) { total += val; hasPlayed = true; }
+                    }
+                    return { name: player.name, profile: profile, total: total, hasPlayed: hasPlayed };
+                })
+                .filter(player => player.hasPlayed); // NUR SPIELER MIT RUNDENERGEBNISSEN
+
+            // Aufsteigend nach der Gesamtanzahl sortieren
+            rankedPlayers.sort((a, b) => a.total - b.total);
             
             rankedPlayers.forEach((rp, idx) => {
                 let row = [idx + 1, rp.name];
@@ -2220,7 +2438,7 @@
                     const scoreVal = mode === 'brutto' ? rp.profile.brutto[i] : rp.profile.netto[i];
                     row.push(scoreVal !== null ? scoreVal : "-");
                 }
-                row.push(rp.hasPlayed ? rp.total : "-");
+                row.push(rp.total);
                 exportData.push(row);
             });
             
@@ -2322,7 +2540,19 @@
                     if (player.rounds && player.rounds.length > 0) {
                         player.rounds.forEach(round => {
                             if (selectedDate === 'ALL' || round.date.trim() === selectedDate) {
-                                allRounds.push({ playerName: player.name, round: round });
+                                // Prüfen, ob in diesem Lochbereich mindestens ein gültiger Score existiert
+                                let hasDataInRange = false;
+                                for (let i = start; i < end; i++) {
+                                    if (round.scores[i] !== null && round.scores[i] !== undefined && round.scores[i] > 0) {
+                                        hasDataInRange = true;
+                                        break;
+                                    }
+                                }
+
+                                // Nur hinzufügen, wenn tatsächlich Ergebnisse im Bereich vorliegen
+                                if (hasDataInRange) {
+                                    allRounds.push({ playerName: player.name, round: round });
+                                }
                             }
                         });
                     }
@@ -2344,7 +2574,7 @@
             allRounds.forEach(item => {
                 const r = item.round;
                 let row = [item.playerName, r.date, r.hcp];
-                let sum = 0, hasData = false;
+                let sum = 0;
 
                 for (let i = start; i < end; i++) {
                     const rawScore = r.scores[i];
@@ -2352,10 +2582,11 @@
                         const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i], appState.courseSetup.hcpIndex[i], r.hcp);
                         row.push(cellVal);
                         sum += cellVal;
-                        hasData = true;
-                    } else { row.push("-"); }
+                    } else { 
+                        row.push("-"); 
+                    }
                 }
-                row.push(hasData ? sum : "-");
+                row.push(sum);
                 exportData.push(row);
             });
 
