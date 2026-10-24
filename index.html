@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf Manager 1.2.1</title>
+    <title>Eclectic Golf Manager WP 2.0</title>
 
     <!-- PWA Meta-Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -223,16 +223,9 @@
             scrollbar-color: var(--border) transparent;
         }
 
-        .player-list::-webkit-scrollbar {
-            width: 5px;
-        }
-        .player-list::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .player-list::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
-        }
+        .player-list::-webkit-scrollbar { width: 5px; }
+        .player-list::-webkit-scrollbar-track { background: transparent; }
+        .player-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
         .player-item { 
             padding: 10px 12px; 
@@ -452,7 +445,7 @@
         .sync-dot.online { background-color: #10b981; }
         .sync-dot.offline { background-color: #ef4444; }
 
-        .controls { display: flex; gap: 15px; align-items: center; }
+        .controls { display: flex; gap: 12px; align-items: center; }
         .controls select { 
             padding: 8px 14px; 
             border-radius: 6px; 
@@ -928,6 +921,137 @@
             .filter-bar { flex-direction: column; align-items: stretch; }
             .charts-container { grid-template-columns: 1fr; }
         }
+
+        /* PRINT STYLESHEET FOR TURNIER-AUSDRUCK & PDF */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 12mm 10mm 12mm 10mm;
+            }
+
+            .sidebar,
+            .mobile-menu-toggle,
+            .sidebar-overlay,
+            .header-bar,
+            .tabs,
+            .sub-tabs,
+            .filter-bar,
+            .btn-panel,
+            .quick-score-bar,
+            .theme-toggle-btn,
+            .info-box,
+            .delete-btn,
+            .delete-player-btn,
+            .charts-container,
+            #charts-accordion-header,
+            .backup-section,
+            .controls {
+                display: none !important;
+            }
+
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+                margin: 0 !important;
+                padding: 0 !important;
+                display: block !important;
+            }
+
+            .main-content {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                overflow: visible !important;
+            }
+
+            .card {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 0 !important;
+                margin-bottom: 20px !important;
+                background: transparent !important;
+            }
+
+            .card h3 {
+                font-size: 16pt !important;
+                font-weight: 700 !important;
+                color: #1e5338 !important;
+                border-bottom: 2px solid #1e5338 !important;
+                padding-bottom: 6px !important;
+                margin-bottom: 12pt !important;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .table-responsive {
+                border: none !important;
+                overflow: visible !important;
+            }
+
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 9pt !important;
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            th, td {
+                border: 1px solid #cbd5e1 !important;
+                padding: 6px 4px !important;
+                text-align: center !important;
+                color: #000000 !important;
+            }
+
+            th {
+                background-color: #f1f5f9 !important;
+                font-weight: 700 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            table td:nth-child(2), table th:nth-child(2) {
+                position: static !important;
+                box-shadow: none !important;
+                background-color: transparent !important;
+            }
+
+            .score-eagle, .score-birdie, .score-par, .score-bogey, .score-dbogey, .best-score, .badge {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            .best-score {
+                background-color: #d1fae5 !important;
+                color: #065f46 !important;
+                font-weight: bold !important;
+            }
+
+            .main-content::before {
+                content: "Eclectic Golf Manager — Offizieller Turnierbericht";
+                display: block;
+                font-size: 10pt;
+                font-weight: bold;
+                color: #64748b;
+                margin-bottom: 10px;
+                border-bottom: 1px solid #cbd5e1;
+                padding-bottom: 4px;
+            }
+
+            .main-content::after {
+                content: "Gedruckt am " attr(data-print-date);
+                display: block;
+                font-size: 8pt;
+                color: #94a3b8;
+                margin-top: 15px;
+                text-align: right;
+            }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>    
 </head>
@@ -988,6 +1112,10 @@
                 </div>
             </div>
             <div class="controls">
+                <button class="theme-toggle-btn" style="background: var(--primary); color: white; border: none;" onclick="printLeaderboard()">
+                    <span>🖨️</span> <span>Drucken / PDF</span>
+                </button>
+
                 <button class="theme-toggle-btn" onclick="toggleTheme()">
                     <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
                 </button>
@@ -1005,10 +1133,13 @@
             <button class="tab-btn active" id="tab-leaderboard" onclick="switchMainTab('leaderboard')">🏆 Gruppen-Leaderboard</button>
             <button class="tab-btn" id="tab-singles" onclick="switchMainTab('singles')">📋 Einzelergebnisse</button>
             <button class="tab-btn" id="tab-matrix" onclick="switchMainTab('matrix')">📊 Einzelspieler-Matrix</button>
+            <button class="tab-btn" id="tab-improved" onclick="switchMainTab('improved')">📈 Meistverbesserter Spieler</button>
+            <button class="tab-btn" id="tab-difficulty" onclick="switchMainTab('difficulty')">⛳ Loch-Schwierigkeitsanalyse</button>
             <button class="tab-btn" id="tab-add" onclick="switchMainTab('add')">📝 Runde eintragen</button>
             <button class="tab-btn" id="tab-setup" onclick="switchMainTab('setup')">⚙️ Platz-Setup (PAR/HCPI)</button>
         </div>
 
+        <!-- VIEW: LEADERBOARD -->
         <div id="view-leaderboard" class="tab-content">
             <div class="card">
                 <h3>Gesamtstand aller Spieler im Vergleich</h3>
@@ -1023,6 +1154,7 @@
             </div>
         </div>
 
+        <!-- VIEW: SINGLES -->
         <div id="view-singles" class="tab-content hidden">
             <div class="card">
                 <h3>Alle Einzelergebnisse</h3>
@@ -1057,6 +1189,7 @@
             </div>
         </div>
 
+        <!-- VIEW: MATRIX -->
         <div id="view-matrix" class="tab-content hidden">
             <div class="card">
                 <h3>Analyse & Bestleistungen</h3>
@@ -1123,11 +1256,64 @@
             </div>
         </div>
 
+        <!-- VIEW: MOST IMPROVED PLAYER -->
+        <div id="view-improved" class="tab-content hidden">
+            <div class="card">
+                <h3>📈 USGA Meistverbesserte Spieler (Handicap-Fortschritt)</h3>
+                <div class="info-box">
+                    Berechnung nach offizieller USGA-Formel: <code>(Start-HCPI + 12) / (End-HCPI + 12)</code>. 
+                    Ein höherer Wert beschreibt eine größere relative Verbesserung.
+                </div>
+                <div class="table-responsive">
+                    <table id="improved-table">
+                        <thead>
+                            <tr>
+                                <th>Rang</th>
+                                <th class="text-left">Spieler</th>
+                                <th>Start-HCPI</th>
+                                <th>Aktuell/End-HCPI</th>
+                                <th>HCPI-Reduktion</th>
+                                <th>USGA Improvement Factor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="improved-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: HOLE DIFFICULTY ANALYSIS -->
+        <div id="view-difficulty" class="tab-content hidden">
+            <div class="card">
+                <h3>⛳ Loch-Schwierigkeitsanalyse (Rangliste aller 18 Löcher)</h3>
+                <div class="info-box">
+                    Analysiert sämtliche eingetragenen Schläge aller Spieler, um die Löcher des Platzes von schwer (+über PAR) bis leicht zu sortieren.
+                </div>
+                <div class="table-responsive">
+                    <table id="difficulty-table">
+                        <thead>
+                            <tr>
+                                <th>Schwierigkeits-Rang</th>
+                                <th>Loch #</th>
+                                <th>PAR</th>
+                                <th>HCPI-Index (Setup)</th>
+                                <th>Gespielte Runden</th>
+                                <th>Ø Schlagzahl</th>
+                                <th>Ø über / unter PAR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="difficulty-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: ADD ROUND -->
         <div id="view-add" class="tab-content hidden">
             <div class="card">
-                <h3>Einzelrunde erfassen</h3>
+                <h3>Einzelrunde erfassen / bearbeiten</h3>
                 <div class="info-box">
-                    <strong>💡 Flexibler Runden-Import:</strong> Trage 18 Löcher ein oder wähle nur die Front Nine (1–9) bzw. Back Nine (10–18). Die App erkennt automatisch, ob es sich um eine 9- oder 18-Loch-Runde handelt.
+                    <strong>💡 Flexibler Runden-Import & Bearbeitung:</strong> Trage 18 Löcher ein oder passe bestehende Ergebnisse an. Die App berechnet die Summen automatisch live.
                 </div>
                 <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
                     <div class="form-group" style="flex: 1; min-width: 150px;">
@@ -1184,6 +1370,7 @@
             </div>
         </div>
 
+        <!-- VIEW: SETUP -->
         <div id="view-setup" class="tab-content hidden">
             <div class="card">
                 <h3>Platzkonfiguration</h3>
@@ -1263,6 +1450,16 @@
                 window.saveToFirebase(appState);
                 setTimeout(() => { isLocalSave = false; }, 800);
             }
+        }
+
+        function printLeaderboard() {
+            const mainContent = document.querySelector('.main-content');
+            if (mainContent) {
+                const now = new Date();
+                const formattedDate = now.toLocaleDateString('de-DE') + ' um ' + now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                mainContent.setAttribute('data-print-date', formattedDate);
+            }
+            window.print();
         }
 
         function toggleMobileSidebar() {
@@ -1481,6 +1678,8 @@
                 renderHistory(); 
                 updateChartsAccordionUI();
             }
+            else if (appState.currentMainTab === 'improved') renderMostImprovedTable();
+            else if (appState.currentMainTab === 'difficulty') renderHoleDifficultyTable();
             else if (appState.currentMainTab === 'setup') renderSetupTable();
         }
 
@@ -1675,6 +1874,15 @@
                 };
             });
             
+            // FILTER: Nur Spieler anzeigen, die ein positives Gesamtergebnis / gespielte Löcher haben
+            rankedPlayers = rankedPlayers.filter(p => p.hasPlayed);
+
+            if (rankedPlayers.length === 0) {
+                html += `<tr><td colspan="${(end - start) + 3}" style="padding:16px; color:var(--text-muted);">Keine Ergebnisse für gespielte Runden in dieser Auswahl vorhanden.</td></tr></tbody>`;
+                table.innerHTML = html;
+                return;
+            }
+
             rankedPlayers.sort((a, b) => mode === 'brutto' ? a.total - b.total : b.total - a.total);
             
             rankedPlayers.forEach((rp, idx) => {
@@ -1872,7 +2080,123 @@
             table.innerHTML = html;
         }
 
-        /* --- RETINA / HIGH-DPI CRISP CANVAS RENDERING HELPER --- */
+        function renderMostImprovedTable() {
+            const tbody = document.getElementById('improved-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            let playerStats = [];
+
+            Object.values(appState.players || {}).forEach(player => {
+                if (!player.rounds || player.rounds.length < 2) return;
+
+                const sortedRounds = [...player.rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
+                
+                const startHcp = parseFloat(sortedRounds[0].hcp);
+                const endHcp = parseFloat(sortedRounds[sortedRounds.length - 1].hcp);
+                const hcpDiff = startHcp - endHcp;
+
+                const factor = (startHcp + 12) / (endHcp + 12);
+
+                playerStats.push({
+                    id: player.id,
+                    name: player.name,
+                    startHcp: startHcp,
+                    endHcp: endHcp,
+                    diff: hcpDiff,
+                    factor: parseFloat(factor.toFixed(3))
+                });
+            });
+
+            if (playerStats.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="padding:16px; color:var(--text-muted);">Es werden mindestens 2 absolvierte Runden pro Spieler benötigt, um den Fortschritt zu berechnen.</td></tr>`;
+                return;
+            }
+
+            playerStats.sort((a, b) => b.factor - a.factor);
+
+            playerStats.forEach((p, idx) => {
+                const isCurrent = p.id === appState.activePlayerId ? 'highlight-row' : '';
+                const diffDisplay = p.diff > 0 ? `-${p.diff.toFixed(1)}` : `+${Math.abs(p.diff).toFixed(1)}`;
+                const diffColor = p.diff > 0 ? 'color: #10b981;' : (p.diff < 0 ? 'color: #ef4444;' : '');
+
+                const tr = document.createElement('tr');
+                tr.className = isCurrent;
+                tr.innerHTML = `
+                    <td><strong>${idx + 1}</strong></td>
+                    <td class="text-left"><strong>${escapeHTML(p.name)}</strong></td>
+                    <td>${p.startHcp.toFixed(1)}</td>
+                    <td>${p.endHcp.toFixed(1)}</td>
+                    <td style="${diffColor}"><strong>${diffDisplay}</strong></td>
+                    <td><span class="badge" style="font-size:13px;">${p.factor.toFixed(3)}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderHoleDifficultyTable() {
+            const tbody = document.getElementById('difficulty-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            let holeStats = Array(18).fill(null).map((_, i) => ({
+                holeNum: i + 1,
+                par: appState.courseSetup.par[i] || 4,
+                hcpIndex: appState.courseSetup.hcpIndex[i] || (i + 1),
+                totalStrokes: 0,
+                count: 0
+            }));
+
+            Object.values(appState.players || {}).forEach(player => {
+                (player.rounds || []).forEach(round => {
+                    (round.scores || []).forEach((score, i) => {
+                        if (score && score > 0) {
+                            holeStats[i].totalStrokes += score;
+                            holeStats[i].count += 1;
+                        }
+                    });
+                });
+            });
+
+            const activeHoles = holeStats.filter(h => h.count > 0);
+
+            if (activeHoles.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="padding:16px; color:var(--text-muted);">Keine Rundendaten vorhanden für eine Loch-Analyse.</td></tr>`;
+                return;
+            }
+
+            activeHoles.forEach(h => {
+                h.avgScore = h.totalStrokes / h.count;
+                h.overPar = h.avgScore - h.par;
+            });
+
+            activeHoles.sort((a, b) => b.overPar - a.overPar);
+
+            activeHoles.forEach((h, idx) => {
+                const overParFormatted = h.overPar > 0 ? `+${h.overPar.toFixed(2)}` : h.overPar.toFixed(2);
+                let badgeColor = '#334155';
+                if (h.overPar > 1.0) badgeColor = '#ef4444';
+                else if (h.overPar > 0.5) badgeColor = '#ea580c';
+                else if (h.overPar <= 0.2) badgeColor = '#10b981';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>#${idx + 1}</strong></td>
+                    <td><strong>Loch ${h.holeNum}</strong></td>
+                    <td>${h.par}</td>
+                    <td>HCP ${h.hcpIndex}</td>
+                    <td>${h.count}x</td>
+                    <td><strong>${h.avgScore.toFixed(2)}</strong></td>
+                    <td>
+                        <span class="badge" style="background:${badgeColor}; color:white; font-weight:700;">
+                            ${overParFormatted}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         function setupCrispCanvas(canvas) {
             if (!canvas) return null;
             const dpr = window.devicePixelRatio || 1;
@@ -2190,6 +2514,7 @@
             });
         }
 
+        /* BEARBEITUNGSFUNKTION MIT EXAKTEN, ALTEN STARTWERTEN */
         function editRound(roundId) {
             const player = appState.players[appState.activePlayerId];
             if (!player || !player.rounds) return;
@@ -2199,33 +2524,40 @@
 
             editingRoundId = roundId;
 
+            // 1. Datum und HCP aus der gespeicherten Runde laden
             const dateEl = document.getElementById('round-date');
             const hcpEl = document.getElementById('round-hcp');
             if (dateEl) dateEl.value = round.date;
             if (hcpEl) hcpEl.value = round.hcp;
 
+            // 2. Eingabefelder für Loch 1-18 mit den gespeicherten Werten füllen
             for (let i = 0; i < 18; i++) {
                 const inputEl = document.getElementById(`input-hole-${i}`);
                 if (inputEl) {
-                    const scoreVal = round.scores ? round.scores[i] : null;
-                    if (scoreVal !== null && scoreVal !== undefined && scoreVal > 0) {
+                    const scoreVal = (round.scores && round.scores[i] !== null && round.scores[i] !== undefined) ? round.scores[i] : '';
+                    if (scoreVal !== '' && scoreVal > 0) {
                         inputEl.value = scoreVal;
                         inputEl.classList.add('filled');
+                        inputEl.classList.remove('input-error');
                     } else {
                         inputEl.value = '';
-                        inputEl.classList.remove('filled');
+                        inputEl.classList.remove('filled', 'input-error');
                     }
                 }
             }
 
-            updateLiveSum();
+            // 3. Tab wechseln & Benutzeroberfläche für Bearbeitungsmodus anpassen
             switchMainTab('add');
+            switchSubTab('add', 'front');
 
             const submitBtn = document.querySelector('#view-add .btn-submit');
             if (submitBtn) submitBtn.innerText = "Änderungen speichern";
 
             const cancelBtn = document.getElementById('btn-cancel-edit');
             if (cancelBtn) cancelBtn.classList.remove('hidden');
+
+            // 4. Live-Summen neu berechnen
+            updateLiveSum();
         }
 
         function cancelEditRound() {
@@ -2736,7 +3068,7 @@
             let start = 0, end = 18;
             if (range === 'front') { start = 0; end = 9; }
             if (range === 'back') { start = 9; end = 18; }
-            
+
             const colorMap = {
                 'score-eagle':  { fill: "FEF08A", font: "854D0E" },
                 'score-birdie': { fill: "BAE6FD", font: "0369A1" },
@@ -2745,8 +3077,28 @@
                 'score-dbogey': { fill: "FEE2E2", font: "B91C1C" }
             };
 
+            const headerStyle = {
+                fill: { patternType: "solid", fgColor: { rgb: "1E5338" } },
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+
+            const setupStyle = {
+                fill: { patternType: "solid", fgColor: { rgb: "F8FAFC" } },
+                font: { bold: true, color: { rgb: "0F172A" } },
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+
+            const totalStyle = {
+                fill: { patternType: "solid", fgColor: { rgb: "E2E8F0" } },
+                font: { bold: true, color: { rgb: "0F172A" } },
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+
+            const workbook = XLSX.utils.book_new();
+
+            /* TAB 1: LEADERBOARD */
             let exportData = [];
-            
             let headerRow = ["Platz", "Spieler"];
             for (let i = start; i < end; i++) headerRow.push("Loch " + (i + 1));
             headerRow.push("Gesamt (" + mode.toUpperCase() + ")");
@@ -2778,9 +3130,12 @@
                 }
                 return { name: player.name, profile: profile, total: total, hasPlayed: hasPlayed };
             });
-            
+
+            // Nur Spieler mit gespielten Runden exportieren
+            rankedPlayers = rankedPlayers.filter(p => p.hasPlayed);
+
             rankedPlayers.sort((a, b) => mode === 'brutto' ? a.total - b.total : b.total - a.total);
-            
+
             rankedPlayers.forEach((rp, idx) => {
                 let row = [idx + 1, rp.name];
                 for (let i = start; i < end; i++) {
@@ -2790,84 +3145,171 @@
                 row.push(rp.hasPlayed ? rp.total : "-");
                 exportData.push(row);
             });
-            
-            const worksheet = XLSX.utils.aoa_to_sheet(exportData);
-            
-            const headerStyle = {
-                fill: { patternType: "solid", fgColor: { rgb: "1E5338" } },
-                font: { bold: true, color: { rgb: "FFFFFF" } },
-                alignment: { horizontal: "center", vertical: "center" }
-            };
 
-            const setupStyle = {
-                fill: { patternType: "solid", fgColor: { rgb: "F8FAFC" } },
-                font: { bold: true, color: { rgb: "0F172A" } },
-                alignment: { horizontal: "center", vertical: "center" }
-            };
-
-            const totalStyle = {
-                fill: { patternType: "solid", fgColor: { rgb: "E2E8F0" } },
-                font: { bold: true, color: { rgb: "0F172A" } },
-                alignment: { horizontal: "center", vertical: "center" }
-            };
+            const wsLeaderboard = XLSX.utils.aoa_to_sheet(exportData);
 
             for (let col = 0; col < headerRow.length; col++) {
                 const cellAddr = XLSX.utils.encode_cell({ r: 0, c: col });
-                if (worksheet[cellAddr]) worksheet[cellAddr].s = headerStyle;
+                if (wsLeaderboard[cellAddr]) wsLeaderboard[cellAddr].s = headerStyle;
             }
 
             for (let r = 1; r <= 2; r++) {
                 for (let col = 0; col < headerRow.length; col++) {
                     const cellAddr = XLSX.utils.encode_cell({ r: r, c: col });
-                    if (worksheet[cellAddr]) worksheet[cellAddr].s = setupStyle;
+                    if (wsLeaderboard[cellAddr]) wsLeaderboard[cellAddr].s = setupStyle;
                 }
             }
 
             rankedPlayers.forEach((rp, rowIdx) => {
                 const excelRow = rowIdx + 3;
-                
                 const posAddr = XLSX.utils.encode_cell({ r: excelRow, c: 0 });
                 const nameAddr = XLSX.utils.encode_cell({ r: excelRow, c: 1 });
-                if (worksheet[posAddr]) worksheet[posAddr].s = { alignment: { horizontal: "center" } };
-                if (worksheet[nameAddr]) worksheet[nameAddr].s = { font: { bold: true }, alignment: { horizontal: "left" } };
+                if (wsLeaderboard[posAddr]) wsLeaderboard[posAddr].s = { alignment: { horizontal: "center" } };
+                if (wsLeaderboard[nameAddr]) wsLeaderboard[nameAddr].s = { font: { bold: true }, alignment: { horizontal: "left" } };
 
                 for (let i = start; i < end; i++) {
                     const colIdx = (i - start) + 2;
                     const cellAddress = XLSX.utils.encode_cell({ r: excelRow, c: colIdx });
                     const scoreVal = mode === 'brutto' ? rp.profile.brutto[i] : rp.profile.netto[i];
                     const parVal = appState.courseSetup.par[i] || 4;
-                    
-                    if (worksheet[cellAddress]) {
+
+                    if (wsLeaderboard[cellAddress]) {
                         if (scoreVal !== null) {
                             const colorClass = getScoreColorClass(scoreVal, parVal, mode);
                             if (colorMap[colorClass]) {
-                                worksheet[cellAddress].s = {
+                                wsLeaderboard[cellAddress].s = {
                                     fill: { patternType: "solid", fgColor: { rgb: colorMap[colorClass].fill } },
                                     font: { bold: true, color: { rgb: colorMap[colorClass].font } },
                                     alignment: { horizontal: "center", vertical: "center" }
                                 };
                             } else {
-                                worksheet[cellAddress].s = { alignment: { horizontal: "center", vertical: "center" } };
+                                wsLeaderboard[cellAddress].s = { alignment: { horizontal: "center", vertical: "center" } };
                             }
                         } else {
-                            worksheet[cellAddress].s = { alignment: { horizontal: "center", vertical: "center" } };
+                            wsLeaderboard[cellAddress].s = { alignment: { horizontal: "center", vertical: "center" } };
                         }
                     }
                 }
 
                 const totalColIdx = (end - start) + 2;
                 const totalCellAddr = XLSX.utils.encode_cell({ r: excelRow, c: totalColIdx });
-                if (worksheet[totalCellAddr]) worksheet[totalCellAddr].s = totalStyle;
+                if (wsLeaderboard[totalCellAddr]) wsLeaderboard[totalCellAddr].s = totalStyle;
             });
 
-            const colWidths = [{ wch: 8 }, { wch: 22 }];
-            for (let i = start; i < end; i++) colWidths.push({ wch: 8 });
-            colWidths.push({ wch: 18 });
-            worksheet['!cols'] = colWidths;
+            const colWidthsLb = [{ wch: 8 }, { wch: 22 }];
+            for (let i = start; i < end; i++) colWidthsLb.push({ wch: 8 });
+            colWidthsLb.push({ wch: 18 });
+            wsLeaderboard['!cols'] = colWidthsLb;
 
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Leaderboard");
-            XLSX.writeFile(workbook, `eclectic_leaderboard_${range}_${mode}.xlsx`);
+            XLSX.utils.book_append_sheet(workbook, wsLeaderboard, "Leaderboard");
+
+            /* TAB 2: MOST IMPROVED PLAYER */
+            let improvedData = [
+                ["Rang", "Spieler", "Start-HCPI", "End-HCPI", "HCPI-Reduktion", "USGA Factor"]
+            ];
+
+            let playerStats = [];
+            Object.values(appState.players || {}).forEach(player => {
+                if (!player.rounds || player.rounds.length < 2) return;
+                const sortedRounds = [...player.rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
+                const startHcp = parseFloat(sortedRounds[0].hcp);
+                const endHcp = parseFloat(sortedRounds[sortedRounds.length - 1].hcp);
+                const hcpDiff = startHcp - endHcp;
+                const factor = (startHcp + 12) / (endHcp + 12);
+
+                playerStats.push({
+                    name: player.name,
+                    startHcp,
+                    endHcp,
+                    diff: hcpDiff,
+                    factor: parseFloat(factor.toFixed(3))
+                });
+            });
+
+            playerStats.sort((a, b) => b.factor - a.factor);
+
+            playerStats.forEach((p, idx) => {
+                improvedData.push([
+                    idx + 1,
+                    p.name,
+                    p.startHcp.toFixed(1),
+                    p.endHcp.toFixed(1),
+                    p.diff > 0 ? `-${p.diff.toFixed(1)}` : `+${Math.abs(p.diff).toFixed(1)}`,
+                    p.factor.toFixed(3)
+                ]);
+            });
+
+            const wsImproved = XLSX.utils.aoa_to_sheet(improvedData);
+
+            for (let col = 0; col < 6; col++) {
+                const cellAddr = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (wsImproved[cellAddr]) wsImproved[cellAddr].s = headerStyle;
+            }
+
+            wsImproved['!cols'] = [
+                { wch: 8 }, { wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 14 }
+            ];
+
+            XLSX.utils.book_append_sheet(workbook, wsImproved, "Meistverbessert");
+
+            /* TAB 3: HOLE DIFFICULTY ANALYSIS */
+            let difficultyData = [
+                ["Rang", "Loch #", "PAR", "HCP Index", "Gespielte Runden", "Ø Schlagzahl", "Ø über/unter PAR"]
+            ];
+
+            let holeStats = Array(18).fill(null).map((_, i) => ({
+                holeNum: i + 1,
+                par: appState.courseSetup.par[i] || 4,
+                hcpIndex: appState.courseSetup.hcpIndex[i] || (i + 1),
+                totalStrokes: 0,
+                count: 0
+            }));
+
+            Object.values(appState.players || {}).forEach(player => {
+                (player.rounds || []).forEach(round => {
+                    (round.scores || []).forEach((score, i) => {
+                        if (score && score > 0) {
+                            holeStats[i].totalStrokes += score;
+                            holeStats[i].count += 1;
+                        }
+                    });
+                });
+            });
+
+            const activeHoles = holeStats.filter(h => h.count > 0);
+            activeHoles.forEach(h => {
+                h.avgScore = h.totalStrokes / h.count;
+                h.overPar = h.avgScore - h.par;
+            });
+
+            activeHoles.sort((a, b) => b.overPar - a.overPar);
+
+            activeHoles.forEach((h, idx) => {
+                difficultyData.push([
+                    idx + 1,
+                    `Loch ${h.holeNum}`,
+                    h.par,
+                    h.hcpIndex,
+                    h.count,
+                    h.avgScore.toFixed(2),
+                    h.overPar > 0 ? `+${h.overPar.toFixed(2)}` : h.overPar.toFixed(2)
+                ]);
+            });
+
+            const wsDifficulty = XLSX.utils.aoa_to_sheet(difficultyData);
+
+            for (let col = 0; col < 7; col++) {
+                const cellAddr = XLSX.utils.encode_cell({ r: 0, c: col });
+                if (wsDifficulty[cellAddr]) wsDifficulty[cellAddr].s = headerStyle;
+            }
+
+            wsDifficulty['!cols'] = [
+                { wch: 8 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 18 }, { wch: 14 }, { wch: 18 }
+            ];
+
+            XLSX.utils.book_append_sheet(workbook, wsDifficulty, "Loch-Schwierigkeit");
+
+            XLSX.writeFile(workbook, `eclectic_turnier_bericht_${range}_${mode}.xlsx`);
         }
 
         function exportSingleResultsExcel() {
@@ -3027,7 +3469,9 @@
             }
             
             applyTheme();
-            updateViews();
+
+            // Beim Start Fokus explizit auf das Leaderboard setzen
+            switchMainTab('leaderboard');
         };
     </script>
 
