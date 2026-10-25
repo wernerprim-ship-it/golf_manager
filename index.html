@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf V2.0</title>
+    <title>Eclectic Golf V2.1</title>
 
     <!-- PWA Meta-Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -920,6 +920,35 @@
             .btn-submit, .btn-reset-filter { width: 100%; padding: 14px; }
             .filter-bar { flex-direction: column; align-items: stretch; }
             .charts-container { grid-template-columns: 1fr; }
+
+            /* Quick-Score-Bar unten als Sticky-Toolbar für Einhandbedienung */
+            .quick-score-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 90;
+                margin: 0;
+                border-radius: 16px 16px 0 0;
+                border-top: 2px solid var(--primary);
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+                padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px)) 12px;
+                background: var(--secondary);
+            }
+
+            /* Ausreichend Abstand unten schaffen, damit der Speichern-Button nicht verdeckt wird */
+            #view-add .btn-panel {
+                margin-bottom: 85px;
+            }
+
+            /* Aktives Eingabefeld unter Sonnenlicht riesig & kontrastreich hervorheben */
+            .score-field input.active-field {
+                border-color: var(--primary) !important;
+                background-color: rgba(16, 185, 129, 0.15) !important;
+                transform: scale(1.08);
+                font-size: 22px !important;
+                font-weight: 800 !important;
+            }
         }
 
         /* PRINT STYLESHEET FOR TURNIER-AUSDRUCK & PDF */
@@ -1439,6 +1468,16 @@
 
         window.saveToFirebase = function() {};
 
+        function triggerHapticFeedback() {
+            if ('vibrate' in navigator) {
+                try {
+                    navigator.vibrate(35);
+                } catch (e) {
+                    // Vibration wird bei strengen Browser-Policies ignoriert
+                }
+            }
+        }
+
         function saveToStorage() {
             try {
                 localStorage.setItem('eclectic_golf_pro_data', JSON.stringify(appState));
@@ -1527,6 +1566,7 @@
             return Math.max(0, 2 + diff);
         }
 
+        /* OPTIMIERTE ECLECTIC PROFILE FUNKTION (O(N) DURCHLAUF) */
         function getEclecticProfile(playerId) {
             const player = appState.players[playerId];
             const profile = {
@@ -1541,36 +1581,38 @@
             const globalSelect = document.getElementById('global-mode-select');
             const globalMode = globalSelect ? globalSelect.value : 'brutto';
 
-            for (let i = 0; i < 18; i++) {
-                let bestBrutto = Infinity;
-                let bestNetto = -1;
-                
-                player.rounds.forEach(round => {
-                    if (!round || !round.scores) return;
+            player.rounds.forEach(round => {
+                if (!round || !round.scores) return;
+
+                for (let i = 0; i < 18; i++) {
                     const score = round.scores[i];
-                    if (score !== null && score !== undefined && score > 0) {
-                        if (score < bestBrutto) {
-                            bestBrutto = score;
-                            if (globalMode === 'brutto') {
-                                profile.dates[i] = round.date;
-                                profile.hcpUsed[i] = round.hcp;
-                            }
-                        }
-                        const netPoints = calculateStableford(score, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, round.hcp);
-                        
-                        if (netPoints > bestNetto || (netPoints === bestNetto && score < (profile.brutto[i] || Infinity))) {
-                            bestNetto = netPoints;
-                            if (globalMode === 'netto') {
-                                profile.dates[i] = round.date;
-                                profile.hcpUsed[i] = round.hcp;
-                            }
+                    if (score === null || score === undefined || score <= 0) continue;
+
+                    const par = appState.courseSetup.par[i] || 4;
+                    const hcpIdx = appState.courseSetup.hcpIndex[i] || 18;
+                    const netPoints = calculateStableford(score, par, hcpIdx, round.hcp);
+
+                    // Brutto-Minimum ermitteln (O(1) Check)
+                    if (profile.brutto[i] === null || score < profile.brutto[i]) {
+                        profile.brutto[i] = score;
+                        if (globalMode === 'brutto') {
+                            profile.dates[i] = round.date;
+                            profile.hcpUsed[i] = round.hcp;
                         }
                     }
-                });
 
-                profile.brutto[i] = bestBrutto === Infinity ? null : bestBrutto;
-                profile.netto[i] = bestNetto === -1 ? null : bestNetto;
-            }
+                    // Netto-Maximum ermitteln (bei Gleichstand entscheidet die niedrigere Brutto-Schlagzahl)
+                    if (profile.netto[i] === null || netPoints > profile.netto[i] || 
+                       (netPoints === profile.netto[i] && (profile.brutto[i] !== null && score < profile.brutto[i]))) {
+                        profile.netto[i] = netPoints;
+                        if (globalMode === 'netto') {
+                            profile.dates[i] = round.date;
+                            profile.hcpUsed[i] = round.hcp;
+                        }
+                    }
+                }
+            });
+
             return profile;
         }
 
@@ -1874,7 +1916,7 @@
                 };
             });
             
-            // FILTER: Nur Spieler anzeigen, die ein positives Gesamtergebnis / gespielte Löcher haben
+            // FILTER: Nur Spieler anzeigen, die gespielte Runden in dieser Auswahl haben
             rankedPlayers = rankedPlayers.filter(p => p.hasPlayed);
 
             if (rankedPlayers.length === 0) {
@@ -2215,6 +2257,7 @@
             return { ctx, width: displayWidth, height: displayHeight, dpr };
         }
 
+        /* NEU GESTALTETE DIAGRAMM-RENDERER */
         function renderCharts(mode) {
             if (!appState.chartsExpanded) return;
 
@@ -2247,6 +2290,7 @@
 
             if (trendTitle) trendTitle.innerText = `Trend der Runden-Gesamtergebnisse (${mode === 'brutto' ? 'Schläge' : 'Netto-Punkte'})`;
             
+            // 1. TREND GRAPH
             const trendData = sortedRounds.map(r => {
                 let sum = 0, count = 0;
                 for (let i = 0; i < 18; i++) {
@@ -2260,17 +2304,21 @@
             }).filter(item => item.val !== null);
 
             if (trendData.length === 0) drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine verwertbaren Runden");
-            else drawLineChart(trendInfo.ctx, trendInfo.width, trendInfo.height, trendData, "#10b981", "#059669");
+            else drawModernLineChart(trendInfo.ctx, trendInfo.width, trendInfo.height, trendData, "#10b981", "rgba(16, 185, 129, 0.2)");
 
+            // 2. HCP GRAPH
             const hcpData = sortedRounds.map(r => ({ date: r.date, val: r.hcp })).filter(item => item.val !== undefined && item.val !== null);
             if (hcpData.length === 0) drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine HCP-Daten");
-            else drawLineChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, hcpData, "#0284c7", "#38bdf8");
+            else drawModernLineChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, hcpData, "#0284c7", "rgba(2, 132, 199, 0.2)");
 
+            // 3. SCORE DISTRIBUTION (BAR CHART)
             let counts = { eagle: 0, birdie: 0, par: 0, bogey: 0, dbogey: 0 };
+            let totalScoresCount = 0;
             sortedRounds.forEach(r => {
                 for (let i = 0; i < 18; i++) {
                     const score = r.scores ? r.scores[i] : null;
                     if (score && score > 0) {
+                        totalScoresCount++;
                         const val = mode === 'brutto' ? score : calculateStableford(score, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
                         const cls = getScoreColorClass(val, appState.courseSetup.par[i] || 4, mode);
                         if (cls === 'score-eagle') counts.eagle++;
@@ -2281,8 +2329,9 @@
                     }
                 }
             });
-            drawBarChart(distInfo.ctx, distInfo.width, distInfo.height, counts);
+            drawModernBarChart(distInfo.ctx, distInfo.width, distInfo.height, counts, totalScoresCount);
 
+            // 4. PAR-TYPE COMPARISON
             let parStats = { 3: { sumDiff: 0, count: 0 }, 4: { sumDiff: 0, count: 0 }, 5: { sumDiff: 0, count: 0 } };
             sortedRounds.forEach(r => {
                 for (let i = 0; i < 18; i++) {
@@ -2294,131 +2343,172 @@
                     }
                 }
             });
-            drawParTypeChart(parTypeInfo.ctx, parTypeInfo.width, parTypeInfo.height, parStats);
+            drawModernParTypeChart(parTypeInfo.ctx, parTypeInfo.width, parTypeInfo.height, parStats);
         }
 
         function drawEmptyChart(ctx, w, h, text) {
+            ctx.clearRect(0, 0, w, h);
             ctx.fillStyle = appState.theme === 'dark' ? "#94a3b8" : "#64748b";
-            ctx.font = "12px -apple-system, BlinkMacSystemFont, sans-serif";
+            ctx.font = "600 12px -apple-system, BlinkMacSystemFont, sans-serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(text, w / 2, h / 2);
         }
 
-        function drawLineChart(ctx, w, h, data, lineColor, dotColor) {
-            const padding = 35;
-            const graphWidth = w - padding * 2;
-            const graphHeight = h - padding * 2;
+        function drawModernLineChart(ctx, w, h, data, strokeColor, fillColor) {
+            ctx.clearRect(0, 0, w, h);
             const isDark = appState.theme === 'dark';
+            const padL = 40, padR = 20, padT = 30, padB = 30;
+            const graphW = w - padL - padR;
+            const graphH = h - padT - padB;
 
             const values = data.map(d => d.val);
             let minVal = Math.min(...values);
             let maxVal = Math.max(...values);
             
-            if (minVal === maxVal) { minVal -= 1; maxVal += 1; }
+            if (minVal === maxVal) { minVal -= 2; maxVal += 2; }
+            else {
+                const margin = (maxVal - minVal) * 0.15;
+                minVal = Math.floor(minVal - margin);
+                maxVal = Math.ceil(maxVal + margin);
+            }
 
-            ctx.strokeStyle = isDark ? "#334155" : "#cbd5e1";
+            // Rasterzeilen (Grid Lines)
+            const gridSteps = 3;
+            ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)";
             ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, h - padding);
-            ctx.lineTo(w - padding, h - padding);
-            ctx.stroke();
+            ctx.setLineDash([4, 4]);
 
-            ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
-            ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
-            ctx.textAlign = "right";
-            ctx.textBaseline = "middle";
-            ctx.fillText(maxVal.toString(), padding - 5, padding + 5);
-            ctx.fillText(minVal.toString(), padding - 5, h - padding);
-
-            ctx.strokeStyle = lineColor;
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-
-            data.forEach((d, idx) => {
-                const x = padding + (graphWidth / (data.length > 1 ? data.length - 1 : 1)) * (data.length > 1 ? idx : 0.5);
-                const y = h - padding - ((d.val - minVal) / (maxVal - minVal)) * graphHeight;
-
-                if (idx === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.stroke();
-
-            data.forEach((d, idx) => {
-                const x = padding + (graphWidth / (data.length > 1 ? data.length - 1 : 1)) * (data.length > 1 ? idx : 0.5);
-                const y = h - padding - ((d.val - minVal) / (maxVal - minVal)) * graphHeight;
-
-                ctx.fillStyle = dotColor;
+            for (let i = 0; i <= gridSteps; i++) {
+                const y = padT + (graphH / gridSteps) * i;
                 ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.moveTo(padL, y);
+                ctx.lineTo(w - padR, y);
+                ctx.stroke();
+
+                const gridVal = (maxVal - (i * (maxVal - minVal) / gridSteps)).toFixed(1);
+                ctx.fillStyle = isDark ? "#64748b" : "#94a3b8";
+                ctx.font = "500 10px -apple-system, sans-serif";
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                ctx.fillText(gridVal.endsWith('.0') ? parseInt(gridVal) : gridVal, padL - 8, y);
+            }
+            ctx.setLineDash([]);
+
+            const points = data.map((d, idx) => {
+                const x = padL + (graphW / (data.length > 1 ? data.length - 1 : 1)) * (data.length > 1 ? idx : 0.5);
+                const y = padT + (1 - (d.val - minVal) / (maxVal - minVal)) * graphH;
+                return { x, y, val: d.val };
+            });
+
+            // Weiche Bezier-Kurve
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const xc = (points[i].x + points[i + 1].x) / 2;
+                const yc = (points[i].y + points[i + 1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+            }
+            if (points.length > 1) {
+                ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+            }
+
+            // Gradient-Füllung
+            const fillGradient = ctx.createLinearGradient(0, padT, 0, h - padB);
+            fillGradient.addColorStop(0, fillColor);
+            fillGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+            ctx.save();
+            ctx.lineTo(points[points.length - 1].x, h - padB);
+            ctx.lineTo(points[0].x, h - padB);
+            ctx.closePath();
+            ctx.fillStyle = fillGradient;
+            ctx.fill();
+            ctx.restore();
+
+            // Kontur-Linie
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Punkte
+            points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = isDark ? "#0f172a" : "#ffffff";
                 ctx.fill();
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
 
                 ctx.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
-                ctx.font = "bold 9px -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.font = "bold 10px -apple-system, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "bottom";
-                ctx.fillText(d.val.toString(), x, y - 6);
+                ctx.fillText(p.val.toString(), p.x, p.y - 8);
             });
         }
 
-        function drawBarChart(ctx, w, h, counts) {
-            const padding = 35;
-            const graphWidth = w - padding * 2;
-            const graphHeight = h - padding * 2;
+        function drawModernBarChart(ctx, w, h, counts, totalCount) {
+            ctx.clearRect(0, 0, w, h);
             const isDark = appState.theme === 'dark';
+            const padL = 20, padR = 20, padT = 30, padB = 30;
+            const graphW = w - padL - padR;
+            const graphH = h - padT - padB;
 
             const categories = [
                 { key: 'eagle', label: 'Eagle-', color: isDark ? '#fef08a' : '#854d0e', bg: isDark ? '#713f12' : '#fef08a' },
                 { key: 'birdie', label: 'Birdie', color: isDark ? '#bae6fd' : '#0369a1', bg: isDark ? '#075985' : '#bae6fd' },
-                { key: 'par', label: 'Par', color: isDark ? '#f1f5f9' : '#334155', bg: isDark ? '#334155' : '#f1f5f9' },
+                { key: 'par', label: 'Par', color: isDark ? '#f1f5f9' : '#334155', bg: isDark ? '#334155' : '#e2e8f0' },
                 { key: 'bogey', label: 'Bogey', color: isDark ? '#ffedd5' : '#c2410c', bg: isDark ? '#9a3412' : '#ffedd5' },
                 { key: 'dbogey', label: 'D.Bogey+', color: isDark ? '#fee2e2' : '#b91c1c', bg: isDark ? '#991b1b' : '#fee2e2' }
             ];
 
             const maxCount = Math.max(...Object.values(counts), 1);
-            const barWidth = graphWidth / categories.length - 10;
-
-            ctx.strokeStyle = isDark ? "#334155" : "#cbd5e1";
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(padding, h - padding);
-            ctx.lineTo(w - padding, h - padding);
-            ctx.stroke();
+            const barW = Math.min(42, (graphW / categories.length) - 12);
 
             categories.forEach((cat, idx) => {
                 const count = counts[cat.key];
-                const barHeight = (count / maxCount) * graphHeight;
-                const x = padding + idx * (barWidth + 10) + 5;
-                const y = h - padding - barHeight;
+                const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
+                const barH = (count / maxCount) * (graphH - 15);
+                const x = padL + idx * (graphW / categories.length) + (graphW / categories.length - barW) / 2;
+                const y = h - padB - barH;
 
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(x, y, barW, Math.max(barH, 4), [6, 6, 0, 0]);
+                } else {
+                    ctx.rect(x, y, barW, Math.max(barH, 4));
+                }
                 ctx.fillStyle = cat.bg;
-                ctx.fillRect(x, y, barWidth, barHeight);
+                ctx.fill();
                 ctx.strokeStyle = cat.color;
-                ctx.lineWidth = 1;
-                ctx.strokeRect(x, y, barWidth, barHeight);
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
 
                 if (count > 0) {
-                    ctx.fillStyle = cat.color;
-                    ctx.font = "bold 10px -apple-system, BlinkMacSystemFont, sans-serif";
+                    ctx.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
+                    ctx.font = "bold 10px -apple-system, sans-serif";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "bottom";
-                    ctx.fillText(count.toString(), x + barWidth / 2, y - 4);
+                    ctx.fillText(`${count} (${pct}%)`, x + barW / 2, y - 4);
                 }
 
                 ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
-                ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.font = "600 10px -apple-system, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "top";
-                ctx.fillText(cat.label, x + barWidth / 2, h - padding + 6);
+                ctx.fillText(cat.label, x + barW / 2, h - padB + 8);
             });
         }
 
-        function drawParTypeChart(ctx, w, h, parStats) {
-            const padding = 35;
-            const graphWidth = w - padding * 2;
-            const graphHeight = h - padding * 2;
+        function drawModernParTypeChart(ctx, w, h, parStats) {
+            ctx.clearRect(0, 0, w, h);
             const isDark = appState.theme === 'dark';
+            const padL = 30, padR = 20, padT = 30, padB = 30;
+            const graphW = w - padL - padR;
+            const graphH = h - padT - padB;
 
             const types = [
                 { par: 3, label: 'Par 3' },
@@ -2437,44 +2527,51 @@
                 return;
             }
 
-            let maxVal = Math.max(...validAverages, 1);
-            let minVal = Math.min(...validAverages, 0);
-            if (minVal > 0) minVal = 0;
+            const maxVal = Math.max(...validAverages, 0.5);
+            const barW = Math.min(50, (graphW / types.length) - 24);
 
-            const barWidth = graphWidth / types.length - 30;
-
-            ctx.strokeStyle = isDark ? "#334155" : "#cbd5e1";
-            ctx.lineWidth = 1;
+            const zeroY = h - padB;
+            ctx.strokeStyle = isDark ? "#475569" : "#cbd5e1";
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.moveTo(padding, h - padding);
-            ctx.lineTo(w - padding, h - padding);
+            ctx.moveTo(padL, zeroY);
+            ctx.lineTo(w - padR, zeroY);
             ctx.stroke();
 
             types.forEach((t, idx) => {
                 const avg = averages[idx];
-                const x = padding + idx * (barWidth + 30) + 15;
+                const x = padL + idx * (graphW / types.length) + (graphW / types.length - barW) / 2;
 
                 if (avg !== null) {
-                    const barHeight = (avg / maxVal) * graphHeight;
-                    const y = h - padding - barHeight;
+                    const barH = (avg / maxVal) * (graphH - 20);
+                    const y = zeroY - barH;
 
-                    ctx.fillStyle = avg <= 1 ? (isDark ? "#075985" : "#bae6fd") : (isDark ? "#9a3412" : "#ffedd5");
-                    ctx.fillRect(x, y, barWidth, barHeight);
-                    ctx.strokeStyle = avg <= 1 ? (isDark ? "#38bdf8" : "#0369a1") : (isDark ? "#fb923c" : "#c2410c");
-                    ctx.strokeRect(x, y, barWidth, barHeight);
+                    ctx.beginPath();
+                    if (ctx.roundRect) {
+                        ctx.roundRect(x, y, barW, Math.max(barH, 4), [6, 6, 0, 0]);
+                    } else {
+                        ctx.rect(x, y, barW, Math.max(barH, 4));
+                    }
+
+                    const isGood = avg <= 0.8;
+                    ctx.fillStyle = isGood ? (isDark ? "rgba(16, 185, 129, 0.25)" : "#d1fae5") : (isDark ? "rgba(239, 68, 68, 0.25)" : "#fee2e2");
+                    ctx.fill();
+                    ctx.strokeStyle = isGood ? "#10b981" : "#ef4444";
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
 
                     ctx.fillStyle = isDark ? "#f1f5f9" : "#0f172a";
-                    ctx.font = "bold 10px -apple-system, BlinkMacSystemFont, sans-serif";
+                    ctx.font = "bold 11px -apple-system, sans-serif";
                     ctx.textAlign = "center";
                     ctx.textBaseline = "bottom";
-                    ctx.fillText((avg >= 0 ? "+" : "") + avg + " Schläge", x + barWidth / 2, y - 4);
+                    ctx.fillText((avg >= 0 ? "+" : "") + avg, x + barW / 2, y - 4);
                 }
 
                 ctx.fillStyle = isDark ? "#94a3b8" : "#64748b";
-                ctx.font = "10px -apple-system, BlinkMacSystemFont, sans-serif";
+                ctx.font = "600 11px -apple-system, sans-serif";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "top";
-                ctx.fillText(t.label, x + barWidth / 2, h - padding + 6);
+                ctx.fillText(t.label, x + barW / 2, zeroY + 8);
             });
         }
 
@@ -2514,7 +2611,6 @@
             });
         }
 
-        /* BEARBEITUNGSFUNKTION MIT EXAKTEN, ALTEN STARTWERTEN */
         function editRound(roundId) {
             const player = appState.players[appState.activePlayerId];
             if (!player || !player.rounds) return;
@@ -2524,13 +2620,11 @@
 
             editingRoundId = roundId;
 
-            // 1. Datum und HCP aus der gespeicherten Runde laden
             const dateEl = document.getElementById('round-date');
             const hcpEl = document.getElementById('round-hcp');
             if (dateEl) dateEl.value = round.date;
             if (hcpEl) hcpEl.value = round.hcp;
 
-            // 2. Eingabefelder für Loch 1-18 mit den gespeicherten Werten füllen
             for (let i = 0; i < 18; i++) {
                 const inputEl = document.getElementById(`input-hole-${i}`);
                 if (inputEl) {
@@ -2546,7 +2640,6 @@
                 }
             }
 
-            // 3. Tab wechseln & Benutzeroberfläche für Bearbeitungsmodus anpassen
             switchMainTab('add');
             switchSubTab('add', 'front');
 
@@ -2556,7 +2649,6 @@
             const cancelBtn = document.getElementById('btn-cancel-edit');
             if (cancelBtn) cancelBtn.classList.remove('hidden');
 
-            // 4. Live-Summen neu berechnen
             updateLiveSum();
         }
 
@@ -2672,6 +2764,7 @@
         }
 
         function handleScoreInput(event, holeIndex) {
+            triggerHapticFeedback();
             const input = event.target;
             const val = parseInt(input.value, 10);
 
@@ -2699,6 +2792,8 @@
         }
 
         function applyQuickScore(deltaOrAction) {
+            triggerHapticFeedback();
+
             const holeIndex = currentFocusedHoleIndex;
             const input = document.getElementById(`input-hole-${holeIndex}`);
             if (!input) return;
@@ -2716,17 +2811,17 @@
                 if (holeIndex < 17) {
                     const nextIndex = holeIndex + 1;
                     if (holeIndex === 8) switchSubTab('add', 'back');
-                    
+
                     setTimeout(() => {
                         const nextInput = document.getElementById(`input-hole-${nextIndex}`);
                         if (nextInput) {
                             nextInput.focus();
                             setActiveHoleIndex(nextIndex);
                         }
-                    }, 50);
+                    }, 60);
                 }
             }
-            
+
             updateLiveSum();
         }
 
@@ -3469,8 +3564,6 @@
             }
             
             applyTheme();
-
-            // Beim Start Fokus explizit auf das Leaderboard setzen
             switchMainTab('leaderboard');
         };
     </script>
@@ -3503,17 +3596,24 @@
           }
       }
 
-      window.saveToFirebase = async function(stateData) {
-          try {
-              await setDoc(docRef, {
-                  players: stateData.players || {},
-                  courseSetup: stateData.courseSetup || {}
-              });
-              setSyncStatus(true);
-          } catch (e) {
-              console.error("Fehler beim Speichern in Firebase: ", e);
-              setSyncStatus(false);
-          }
+      /* FIRESTORE DEBOUNCER (SCHONT DISK/WRITE QUOTA BEIM SCHNELLEN TIPPEN) */
+      let firebaseSaveTimeout = null;
+
+      window.saveToFirebase = function(stateData) {
+          if (firebaseSaveTimeout) clearTimeout(firebaseSaveTimeout);
+          
+          firebaseSaveTimeout = setTimeout(async () => {
+              try {
+                  await setDoc(docRef, {
+                      players: stateData.players || {},
+                      courseSetup: stateData.courseSetup || {}
+                  });
+                  setSyncStatus(true);
+              } catch (e) {
+                  console.error("Fehler beim Speichern in Firebase: ", e);
+                  setSyncStatus(false);
+              }
+          }, 500);
       };
 
       onSnapshot(docRef, (docSnap) => {
