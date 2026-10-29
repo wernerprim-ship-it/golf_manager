@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf V2.1</title>
+    <title>Eclectic Golf V2.2</title>
 
     <!-- PWA Meta-Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -888,6 +888,96 @@
         }
         table th:nth-child(2) { background-color: var(--bg-main); }
 
+        /* MODAL STYLES FOR DELETE CONFIRMATIONS */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-overlay.hidden {
+            display: none !important;
+        }
+
+        .modal-card {
+            background: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            animation: modalPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-card h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-card p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-modal-cancel {
+            background: var(--bg-main);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-modal-confirm {
+            background: #ef4444;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-modal-confirm:hover {
+            background: #dc2626;
+        }
+
         @media (max-width: 900px) {
             body { flex-direction: column; }
             .mobile-menu-toggle { display: block; }
@@ -921,7 +1011,6 @@
             .filter-bar { flex-direction: column; align-items: stretch; }
             .charts-container { grid-template-columns: 1fr; }
 
-            /* Quick-Score-Bar unten als Sticky-Toolbar für Einhandbedienung */
             .quick-score-bar {
                 position: fixed;
                 bottom: 0;
@@ -936,12 +1025,10 @@
                 background: var(--secondary);
             }
 
-            /* Ausreichend Abstand unten schaffen, damit der Speichern-Button nicht verdeckt wird */
             #view-add .btn-panel {
                 margin-bottom: 85px;
             }
 
-            /* Aktives Eingabefeld unter Sonnenlicht riesig & kontrastreich hervorheben */
             .score-field input.active-field {
                 border-color: var(--primary) !important;
                 background-color: rgba(16, 185, 129, 0.15) !important;
@@ -974,7 +1061,8 @@
             .charts-container,
             #charts-accordion-header,
             .backup-section,
-            .controls {
+            .controls,
+            .modal-overlay {
                 display: none !important;
             }
 
@@ -1126,6 +1214,7 @@
                 <button class="csv-btn" onclick="exportSingleResultsExcel()">📗 Einzelergebnisse (Excel)</button>
                 
                 <button class="backup-btn" style="background:#ef4444 !important; margin-top:10px;" onclick="deleteAllRounds()">🚨 Alle Runden löschen</button>
+                <button class="backup-btn" style="background:#dc2626 !important; margin-top:6px;" onclick="deleteAllPlayers()">🚨 ALLE SPIELER LÖSCHEN</button>
             </div>
         </div>
     </div>
@@ -1422,6 +1511,34 @@
 
     </div>
 
+    <!-- DELETE PLAYER CONFIRMATION MODAL -->
+    <div id="delete-player-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3>🚨 Spieler löschen</h3>
+            <p id="delete-player-modal-text">Möchten Sie diesen Spieler wirklich löschen?</p>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" onclick="closeDeletePlayerModal()">Abbrechen</button>
+                <button class="btn-modal-confirm" id="btn-confirm-delete-player">Löschen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE ALL PLAYERS CONFIRMATION MODAL -->
+    <div id="delete-all-players-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h3>🚨 ALLE SPIELER LÖSCHEN</h3>
+            <p>Möchten Sie <strong>WIRKLICH ALLE SPIELER</strong> und deren gesamte Rundenhistorie unwiderruflich löschen?</p>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+                <label style="font-size:12px; font-weight:700; color:var(--text-muted);">Zur Bestätigung <strong>LÖSCHEN</strong> eingeben:</label>
+                <input type="text" id="delete-all-players-input" placeholder="LÖSCHEN" style="padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text); font-weight:700; text-transform:uppercase;">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancel" onclick="closeDeleteAllPlayersModal()">Abbrechen</button>
+                <button class="btn-modal-confirm" id="btn-confirm-delete-all-players" onclick="confirmDeleteAllPlayers()">Alles Unwiderruflich Löschen</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         function escapeHTML(str) {
             if (str === null || str === undefined) return '';
@@ -1465,6 +1582,7 @@
         let currentFocusedHoleIndex = 0;
         let isLocalSave = false;
         let editingRoundId = null;
+        let pendingDeletePlayerId = null;
 
         window.saveToFirebase = function() {};
 
@@ -1566,7 +1684,6 @@
             return Math.max(0, 2 + diff);
         }
 
-        /* OPTIMIERTE ECLECTIC PROFILE FUNKTION (O(N) DURCHLAUF) */
         function getEclecticProfile(playerId) {
             const player = appState.players[playerId];
             const profile = {
@@ -1592,7 +1709,6 @@
                     const hcpIdx = appState.courseSetup.hcpIndex[i] || 18;
                     const netPoints = calculateStableford(score, par, hcpIdx, round.hcp);
 
-                    // Brutto-Minimum ermitteln (O(1) Check)
                     if (profile.brutto[i] === null || score < profile.brutto[i]) {
                         profile.brutto[i] = score;
                         if (globalMode === 'brutto') {
@@ -1601,7 +1717,6 @@
                         }
                     }
 
-                    // Netto-Maximum ermitteln (bei Gleichstand entscheidet die niedrigere Brutto-Schlagzahl)
                     if (profile.netto[i] === null || netPoints > profile.netto[i] || 
                        (netPoints === profile.netto[i] && (profile.brutto[i] !== null && score < profile.brutto[i]))) {
                         profile.netto[i] = netPoints;
@@ -1872,17 +1987,81 @@
             const player = appState.players[playerId];
             if (!player) return;
 
-            if (confirm(`Möchten Sie den Spieler "${player.name}" und alle seine gespeicherten Runden wirklich löschen?`)) {
-                delete appState.players[playerId];
-                
-                if (appState.activePlayerId === playerId) {
-                    const remainingPlayerIds = Object.keys(appState.players);
-                    appState.activePlayerId = remainingPlayerIds.length > 0 ? remainingPlayerIds[0] : null;
-                }
-                
-                saveToStorage();
-                updateViews();
+            pendingDeletePlayerId = playerId;
+            
+            const modalText = document.getElementById('delete-player-modal-text');
+            if (modalText) {
+                modalText.innerHTML = `Möchten Sie den Spieler <strong>"${escapeHTML(player.name)}"</strong> und alle seine gespeicherten Runden wirklich unwiderruflich löschen?`;
             }
+
+            const confirmBtn = document.getElementById('btn-confirm-delete-player');
+            if (confirmBtn) {
+                confirmBtn.onclick = () => confirmDeletePlayer();
+            }
+
+            const modal = document.getElementById('delete-player-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        function closeDeletePlayerModal() {
+            pendingDeletePlayerId = null;
+            const modal = document.getElementById('delete-player-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function confirmDeletePlayer() {
+            if (!pendingDeletePlayerId) return;
+
+            const playerId = pendingDeletePlayerId;
+            delete appState.players[playerId];
+            
+            if (appState.activePlayerId === playerId) {
+                const remainingPlayerIds = Object.keys(appState.players);
+                appState.activePlayerId = remainingPlayerIds.length > 0 ? remainingPlayerIds[0] : null;
+            }
+            
+            closeDeletePlayerModal();
+            saveToStorage();
+            updateViews();
+        }
+
+        function deleteAllPlayers() {
+            const modal = document.getElementById('delete-all-players-modal');
+            const input = document.getElementById('delete-all-players-input');
+            if (input) input.value = '';
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeDeleteAllPlayersModal() {
+            const modal = document.getElementById('delete-all-players-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function confirmDeleteAllPlayers() {
+            const input = document.getElementById('delete-all-players-input');
+            const confirmValue = input ? input.value.trim().toUpperCase() : '';
+
+            if (confirmValue !== "LÖSCHEN") {
+                alert("❌ Bestätigung fehlgeschlagen. Bitte geben Sie exakt das Wort 'LÖSCHEN' ein.");
+                return;
+            }
+
+            appState.players = {};
+            appState.activePlayerId = null;
+
+            if (typeof cancelEditRound === 'function') {
+                cancelEditRound();
+            }
+
+            closeDeleteAllPlayersModal();
+            saveToStorage();
+            updateViews();
+
+            alert("✅ Alle Spieler und deren Runden wurden erfolgreich gelöscht.");
         }
 
         function renderLeaderboard(mode) {
@@ -1916,7 +2095,6 @@
                 };
             });
             
-            // FILTER: Nur Spieler anzeigen, die gespielte Runden in dieser Auswahl haben
             rankedPlayers = rankedPlayers.filter(p => p.hasPlayed);
 
             if (rankedPlayers.length === 0) {
@@ -2257,7 +2435,6 @@
             return { ctx, width: displayWidth, height: displayHeight, dpr };
         }
 
-        /* NEU GESTALTETE DIAGRAMM-RENDERER */
         function renderCharts(mode) {
             if (!appState.chartsExpanded) return;
 
@@ -2290,7 +2467,6 @@
 
             if (trendTitle) trendTitle.innerText = `Trend der Runden-Gesamtergebnisse (${mode === 'brutto' ? 'Schläge' : 'Netto-Punkte'})`;
             
-            // 1. TREND GRAPH
             const trendData = sortedRounds.map(r => {
                 let sum = 0, count = 0;
                 for (let i = 0; i < 18; i++) {
@@ -2306,12 +2482,10 @@
             if (trendData.length === 0) drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine verwertbaren Runden");
             else drawModernLineChart(trendInfo.ctx, trendInfo.width, trendInfo.height, trendData, "#10b981", "rgba(16, 185, 129, 0.2)");
 
-            // 2. HCP GRAPH
             const hcpData = sortedRounds.map(r => ({ date: r.date, val: r.hcp })).filter(item => item.val !== undefined && item.val !== null);
             if (hcpData.length === 0) drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine HCP-Daten");
             else drawModernLineChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, hcpData, "#0284c7", "rgba(2, 132, 199, 0.2)");
 
-            // 3. SCORE DISTRIBUTION (BAR CHART)
             let counts = { eagle: 0, birdie: 0, par: 0, bogey: 0, dbogey: 0 };
             let totalScoresCount = 0;
             sortedRounds.forEach(r => {
@@ -2331,7 +2505,6 @@
             });
             drawModernBarChart(distInfo.ctx, distInfo.width, distInfo.height, counts, totalScoresCount);
 
-            // 4. PAR-TYPE COMPARISON
             let parStats = { 3: { sumDiff: 0, count: 0 }, 4: { sumDiff: 0, count: 0 }, 5: { sumDiff: 0, count: 0 } };
             sortedRounds.forEach(r => {
                 for (let i = 0; i < 18; i++) {
@@ -2373,7 +2546,6 @@
                 maxVal = Math.ceil(maxVal + margin);
             }
 
-            // Rasterzeilen (Grid Lines)
             const gridSteps = 3;
             ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)";
             ctx.lineWidth = 1;
@@ -2401,7 +2573,6 @@
                 return { x, y, val: d.val };
             });
 
-            // Weiche Bezier-Kurve
             ctx.beginPath();
             ctx.moveTo(points[0].x, points[0].y);
 
@@ -2414,7 +2585,6 @@
                 ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
             }
 
-            // Gradient-Füllung
             const fillGradient = ctx.createLinearGradient(0, padT, 0, h - padB);
             fillGradient.addColorStop(0, fillColor);
             fillGradient.addColorStop(1, "rgba(255, 255, 255, 0)");
@@ -2427,12 +2597,10 @@
             ctx.fill();
             ctx.restore();
 
-            // Kontur-Linie
             ctx.strokeStyle = strokeColor;
             ctx.lineWidth = 3;
             ctx.stroke();
 
-            // Punkte
             points.forEach(p => {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
@@ -3097,7 +3265,14 @@
 
                         if (!isFront && !isBack) continue;
 
-                        let playerObj = Object.values(appState.players).find(p => p.name.toLowerCase() === playerName.toLowerCase());
+                        // OPTIMIERTER NAMENSVERGLEICH: Entfernt ALLE Leerzeichen und ignoriert Groß-/Kleinschreibung
+                        const normalizeName = (name) => (name || '').replace(/\s+/g, '').toLowerCase();
+                        const normalizedImportName = normalizeName(playerName);
+
+                        let playerObj = Object.values(appState.players).find(p => 
+                            normalizeName(p.name) === normalizedImportName
+                        );
+
                         if (!playerObj) {
                             const newId = 'p_' + Date.now() + '_' + Math.floor(Math.random()*1000);
                             playerObj = { id: newId, name: playerName, rounds: [] };
@@ -3226,9 +3401,7 @@
                 return { name: player.name, profile: profile, total: total, hasPlayed: hasPlayed };
             });
 
-            // Nur Spieler mit gespielten Runden exportieren
             rankedPlayers = rankedPlayers.filter(p => p.hasPlayed);
-
             rankedPlayers.sort((a, b) => mode === 'brutto' ? a.total - b.total : b.total - a.total);
 
             rankedPlayers.forEach((rp, idx) => {
@@ -3596,7 +3769,6 @@
           }
       }
 
-      /* FIRESTORE DEBOUNCER (SCHONT DISK/WRITE QUOTA BEIM SCHNELLEN TIPPEN) */
       let firebaseSaveTimeout = null;
 
       window.saveToFirebase = function(stateData) {
