@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf V2.2</title>
+    <title>Eclectic Golf V2.3 — Multi-Turnier Edition</title>
 
     <!-- PWA Meta-Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -421,6 +421,8 @@
             box-shadow: var(--card-shadow); 
             border: 1px solid var(--border);
             transition: background-color 0.3s ease, border-color 0.3s ease;
+            flex-wrap: wrap;
+            gap: 16px;
         }
 
         .header-bar h1 { margin: 0; color: var(--text); font-size: 22px; font-weight: 700; }
@@ -445,7 +447,7 @@
         .sync-dot.online { background-color: #10b981; }
         .sync-dot.offline { background-color: #ef4444; }
 
-        .controls { display: flex; gap: 12px; align-items: center; }
+        .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .controls select { 
             padding: 8px 14px; 
             border-radius: 6px; 
@@ -458,6 +460,42 @@
         }
 
         .controls select:focus { border-color: var(--primary); }
+
+        .tournament-selector-wrapper {
+            display: flex;
+            flex-direction: column;
+            background: rgba(16, 185, 129, 0.08);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+        }
+
+        body.dark-mode .tournament-selector-wrapper {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--accent);
+        }
+
+        .tournament-selector-wrapper label {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 2px;
+        }
+
+        body.dark-mode .tournament-selector-wrapper label {
+            color: var(--accent);
+        }
+
+        .tournament-selector-wrapper select {
+            border: none;
+            background: transparent;
+            padding: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text);
+            cursor: pointer;
+        }
 
         .theme-toggle-btn {
             background: var(--bg-main);
@@ -888,7 +926,7 @@
         }
         table th:nth-child(2) { background-color: var(--bg-main); }
 
-        /* MODAL STYLES FOR DELETE CONFIRMATIONS */
+        /* MODAL STYLES */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -905,9 +943,7 @@
             transition: opacity 0.2s ease;
         }
 
-        .modal-overlay.hidden {
-            display: none !important;
-        }
+        .modal-overlay.hidden { display: none !important; }
 
         .modal-card {
             background: var(--secondary);
@@ -916,7 +952,7 @@
             padding: 24px;
             border-radius: 12px;
             width: 90%;
-            max-width: 420px;
+            max-width: 440px;
             box-shadow: var(--card-shadow);
             display: flex;
             flex-direction: column;
@@ -974,9 +1010,7 @@
             cursor: pointer;
         }
 
-        .btn-modal-confirm:hover {
-            background: #dc2626;
-        }
+        .btn-modal-confirm:hover { background: #dc2626; }
 
         @media (max-width: 900px) {
             body { flex-direction: column; }
@@ -1025,9 +1059,7 @@
                 background: var(--secondary);
             }
 
-            #view-add .btn-panel {
-                margin-bottom: 85px;
-            }
+            #view-add .btn-panel { margin-bottom: 85px; }
 
             .score-field input.active-field {
                 border-color: var(--primary) !important;
@@ -1038,7 +1070,7 @@
             }
         }
 
-        /* PRINT STYLESHEET FOR TURNIER-AUSDRUCK & PDF */
+        /* PRINT STYLESHEET */
         @media print {
             @page {
                 size: A4 landscape;
@@ -1213,7 +1245,7 @@
                 <button class="csv-btn" style="background:#059669 !important;" onclick="exportLeaderboardExcel()">📗 Bestenliste (Excel)</button>
                 <button class="csv-btn" onclick="exportSingleResultsExcel()">📗 Einzelergebnisse (Excel)</button>
                 
-                <button class="backup-btn" style="background:#ef4444 !important; margin-top:10px;" onclick="deleteAllRounds()">🚨 Alle Runden löschen</button>
+                <button class="backup-btn" style="background:#ef4444 !important; margin-top:10px;" onclick="deleteAllRounds()">🚨 Alle Runden des Turniers löschen</button>
                 <button class="backup-btn" style="background:#dc2626 !important; margin-top:6px;" onclick="deleteAllPlayers()">🚨 ALLE SPIELER LÖSCHEN</button>
             </div>
         </div>
@@ -1230,6 +1262,11 @@
                 </div>
             </div>
             <div class="controls">
+                <div class="tournament-selector-wrapper">
+                    <label for="global-tournament-select">🏆 Aktives Turnier / Saison:</label>
+                    <select id="global-tournament-select" onchange="changeActiveTournament(this.value)"></select>
+                </div>
+
                 <button class="theme-toggle-btn" style="background: var(--primary); color: white; border: none;" onclick="printLeaderboard()">
                     <span>🖨️</span> <span>Drucken / PDF</span>
                 </button>
@@ -1254,13 +1291,14 @@
             <button class="tab-btn" id="tab-improved" onclick="switchMainTab('improved')">📈 Meistverbesserter Spieler</button>
             <button class="tab-btn" id="tab-difficulty" onclick="switchMainTab('difficulty')">⛳ Loch-Schwierigkeitsanalyse</button>
             <button class="tab-btn" id="tab-add" onclick="switchMainTab('add')">📝 Runde eintragen</button>
+            <button class="tab-btn" id="tab-tournaments" onclick="switchMainTab('tournaments')">🏆 Saisons & Turniere</button>
             <button class="tab-btn" id="tab-setup" onclick="switchMainTab('setup')">⚙️ Platz-Setup (PAR/HCPI)</button>
         </div>
 
         <!-- VIEW: LEADERBOARD -->
         <div id="view-leaderboard" class="tab-content">
             <div class="card">
-                <h3>Gesamtstand aller Spieler im Vergleich</h3>
+                <h3 id="leaderboard-card-title">Gesamtstand aller Spieler im Vergleich</h3>
                 <div class="sub-tabs">
                     <button class="sub-tab-btn active" id="lead-sub-1" onclick="switchSubTab('leaderboard', 'front')">Loch 1 - 9</button>
                     <button class="sub-tab-btn" id="lead-sub-2" onclick="switchSubTab('leaderboard', 'back')">Loch 10 - 18</button>
@@ -1354,7 +1392,7 @@
             </div>
             
             <div class="card">
-                <h3>Absolvierte Rundenhistorie</h3>
+                <h3>Absolvierte Rundenhistorie im aktuellen Turnier</h3>
                 <div class="table-responsive">
                     <table id="history-table">
                         <thead>
@@ -1380,7 +1418,7 @@
                 <h3>📈 USGA Meistverbesserte Spieler (Handicap-Fortschritt)</h3>
                 <div class="info-box">
                     Berechnung nach offizieller USGA-Formel: <code>(Start-HCPI + 12) / (End-HCPI + 12)</code>. 
-                    Ein höherer Wert beschreibt eine größere relative Verbesserung.
+                    Ein höherer Wert beschreibt eine größere relative Verbesserung im Verlauf des aktiven Turniers.
                 </div>
                 <div class="table-responsive">
                     <table id="improved-table">
@@ -1405,7 +1443,7 @@
             <div class="card">
                 <h3>⛳ Loch-Schwierigkeitsanalyse (Rangliste aller 18 Löcher)</h3>
                 <div class="info-box">
-                    Analysiert sämtliche eingetragenen Schläge aller Spieler, um die Löcher des Platzes von schwer (+über PAR) bis leicht zu sortieren.
+                    Analysiert sämtliche eingetragenen Schläge aller Spieler im aktuellen Turnier, um die Löcher des Platzes von schwer (+über PAR) bis leicht zu sortieren.
                 </div>
                 <div class="table-responsive">
                     <table id="difficulty-table">
@@ -1431,12 +1469,12 @@
             <div class="card">
                 <h3>Einzelrunde erfassen / bearbeiten</h3>
                 <div class="info-box">
-                    <strong>💡 Flexibler Runden-Import & Bearbeitung:</strong> Trage 18 Löcher ein oder passe bestehende Ergebnisse an. Geben Sie das Datum im deutschen Format <strong>TT.MM.JJJJ</strong> ein.
+                    <strong>💡 Flexibler Runden-Import & Bearbeitung:</strong> Trage 18 Löcher ein oder passe bestehende Ergebnisse an. Das Datum wird im deutschen Format <code>DD.MM.YYYY</code> erfasst.
                 </div>
                 <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
                     <div class="form-group" style="flex: 1; min-width: 150px;">
-                        <label for="round-date" style="color: var(--text); font-weight:600;">Spieldatum (TT.MM.JJJJ):</label>
-                        <input type="text" id="round-date" placeholder="DD.MM.YYYY" maxlength="10" onblur="formatAndValidateDateInput(this)" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; background: var(--input-bg); color: var(--text);">
+                        <label for="round-date" style="color: var(--text); font-weight:600;">Spieldatum (DD.MM.YYYY):</label>
+                        <input type="text" id="round-date" placeholder="z. B. 01.11.2026" onblur="formatAndValidateDateInput(this)" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; background: var(--input-bg); color: var(--text); font-weight:700;">
                     </div>
                     <div class="form-group" style="flex: 1; min-width: 150px;">
                         <label for="round-hcp" style="color: var(--text); font-weight:600;">Tages-Handicap (HCPI):</label>
@@ -1488,12 +1526,44 @@
             </div>
         </div>
 
+        <!-- VIEW: TOURNAMENTS MANAGEMENT -->
+        <div id="view-tournaments" class="tab-content hidden">
+            <div class="card">
+                <h3>🏆 Saisons & Turniere Verwalten</h3>
+                <div class="info-box">
+                    Erstelle neue Eclectic-Turnierserien oder wähle historische Saisons zur Einsicht aus. Jedes Turnier besitzt eigene Runden und sein eigenes Platz-Setup.
+                </div>
+                
+                <div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; align-items:flex-end;">
+                    <div style="flex:1; min-width:240px;">
+                        <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:6px;">NEUES TURNIER ANLEGEN:</label>
+                        <input type="text" id="new-tournament-name" placeholder="z. B. Winter-Eclectic 2026/27..." style="width:100%; padding:10px 12px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text); font-weight:600;">
+                    </div>
+                    <button class="btn-submit" onclick="createTournament()">Turnier erstellen</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="tournaments-table">
+                        <thead>
+                            <tr>
+                                <th class="text-left">Turnier / Saison-Bezeichnung</th>
+                                <th>Gespielte Runden</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tournaments-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- VIEW: SETUP -->
         <div id="view-setup" class="tab-content hidden">
             <div class="card">
-                <h3>Platzkonfiguration</h3>
+                <h3>Platzkonfiguration (Aktuelles Turnier)</h3>
                 <div class="info-box">
-                    Tragen Sie hier die offiziellen <strong>PAR-Werte</strong> sowie den Schwierigkeitsgrad (<strong>HCPI-Index / Vorgabe-Schlüssel 1 bis 18</strong>) des Platzes ein.
+                    Tragen Sie hier die offiziellen <strong>PAR-Werte</strong> sowie den Schwierigkeitsgrad (<strong>HCPI-Index / Vorgabe-Schlüssel 1 bis 18</strong>) für das aktiv gewählte Turnier ein.
                 </div>
                 <div class="sub-tabs">
                     <button class="sub-tab-btn active" id="setup-sub-1" onclick="switchSubTab('setup', 'front')">Loch 1 - 9</button>
@@ -1527,7 +1597,7 @@
     <div id="delete-all-players-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <h3>🚨 ALLE SPIELER LÖSCHEN</h3>
-            <p>Möchten Sie <strong>WIRKLICH ALLE SPIELER</strong> und deren gesamte Rundenhistorie unwiderruflich löschen?</p>
+            <p>Möchten Sie <strong>WIRKLICH ALLE SPIELER</strong> und deren gesamte Rundenhistorie über alle Turniere hinweg unwiderruflich löschen?</p>
             <div style="display:flex; flex-direction:column; gap:6px;">
                 <label style="font-size:12px; font-weight:700; color:var(--text-muted);">Zur Bestätigung <strong>LÖSCHEN</strong> eingeben:</label>
                 <input type="text" id="delete-all-players-input" placeholder="LÖSCHEN" style="padding:8px 10px; border-radius:6px; border:1px solid var(--border); background:var(--input-bg); color:var(--text); font-weight:700; text-transform:uppercase;">
@@ -1560,112 +1630,80 @@
                 .replace(/>/g, '&gt;');
         }
 
-        // UNIFIED GERMAN DATE HELPERS (DD.MM.YYYY)
-        function getTodayGermanString() {
-            const today = new Date();
-            const day = String(today.getDate()).padStart(2, '0');
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const year = today.getFullYear();
-            return `${day}.${month}.${year}`;
+        function getTodayGermanDate() {
+            const now = new Date();
+            const dd = String(now.getDate()).padStart(2, '0');
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            return `${dd}.${mm}.${yyyy}`;
         }
 
         function normalizeToGermanDate(dateStr) {
-            if (!dateStr) return '';
-            const trimmed = String(dateStr).trim();
-            if (!trimmed) return '';
-
-            // Handle ISO YYYY-MM-DD
-            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-                const parts = trimmed.split('-');
+            if (!dateStr) return getTodayGermanDate();
+            let str = String(dateStr).trim();
+            if (/^\d{2}\.\d{2}\.\d{4}$/.test(str)) return str;
+            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+                const parts = str.split('-');
                 return `${parts[2]}.${parts[1]}.${parts[0]}`;
             }
-
-            // Handle DD.MM.YYYY or DD.MM.YY
-            if (trimmed.includes('.')) {
-                const parts = trimmed.split('.');
-                if (parts.length === 3) {
-                    let d = parts[0].padStart(2, '0');
-                    let m = parts[1].padStart(2, '0');
-                    let y = parts[2];
-                    if (y.length === 2) y = '20' + y;
-                    if (d.length === 2 && m.length === 2 && y.length === 4) {
-                        return `${d}.${m}.${y}`;
-                    }
-                }
+            if (/^\d{1,2}\.\d{1,2}\.\d{2,4}$/.test(str)) {
+                const parts = str.split('.');
+                const dd = parts[0].padStart(2, '0');
+                const mm = parts[1].padStart(2, '0');
+                let yyyy = parts[2];
+                if (yyyy.length === 2) yyyy = '20' + yyyy;
+                return `${dd}.${mm}.${yyyy}`;
             }
-
-            // Fallback: Attempt JS Date parsing
-            const parsed = new Date(trimmed);
-            if (!isNaN(parsed.getTime())) {
-                const day = String(parsed.getDate()).padStart(2, '0');
-                const month = String(parsed.getMonth() + 1).padStart(2, '0');
-                const year = parsed.getFullYear();
-                return `${day}.${month}.${year}`;
-            }
-
-            return trimmed;
+            return str;
         }
 
         function parseDateString(dateStr) {
             if (!dateStr) return 0;
-            const str = String(dateStr).trim();
-
-            if (str.includes('.')) {
-                const parts = str.split('.');
-                if (parts.length === 3) {
-                    const day = parseInt(parts[0], 10);
-                    const month = parseInt(parts[1], 10) - 1;
-                    let year = parseInt(parts[2], 10);
-                    if (year < 100) year += 2000;
-                    const d = new Date(year, month, day);
-                    return isNaN(d.getTime()) ? 0 : d.getTime();
-                }
+            const norm = normalizeToGermanDate(dateStr);
+            if (norm.includes('.')) {
+                const parts = norm.split('.');
+                if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
             }
-
-            if (str.includes('-')) {
-                const parts = str.split('-');
-                if (parts.length === 3) {
-                    const year = parseInt(parts[0], 10);
-                    const month = parseInt(parts[1], 10) - 1;
-                    const day = parseInt(parts[2], 10);
-                    const d = new Date(year, month, day);
-                    return isNaN(d.getTime()) ? 0 : d.getTime();
-                }
-            }
-
-            const ts = new Date(str).getTime();
-            return isNaN(ts) ? 0 : ts;
+            return new Date(norm).getTime() || 0;
         }
 
-        function isValidGermanDate(dateStr) {
-            if (!/^\d{2}\.\d{2}\.\d{4}$/.test(dateStr)) return false;
-            const parts = dateStr.split('.');
-            const day = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10) - 1;
-            const year = parseInt(parts[2], 10);
-            const dateObj = new Date(year, month, day);
-            return dateObj.getFullYear() === year && dateObj.getMonth() === month && dateObj.getDate() === day;
-        }
-
-        function formatAndValidateDateInput(input) {
-            if (!input) return;
-            const val = input.value.trim();
-            if (!val) return;
+        function formatAndValidateDateInput(inputEl) {
+            if (!inputEl) return;
+            let val = inputEl.value.trim();
+            if (!val) {
+                inputEl.value = getTodayGermanDate();
+                return;
+            }
+            val = val.replace(/[^\d.]/g, '');
+            if (/^\d{6}$/.test(val)) {
+                val = `${val.substring(0,2)}.${val.substring(2,4)}.20${val.substring(4,6)}`;
+            } else if (/^\d{8}$/.test(val)) {
+                val = `${val.substring(0,2)}.${val.substring(2,4)}.${val.substring(4,8)}`;
+            }
             const normalized = normalizeToGermanDate(val);
-            input.value = normalized;
-            if (!isValidGermanDate(normalized)) {
-                input.style.borderColor = 'var(--error-border)';
+            if (/^\d{2}\.\d{2}\.\d{4}$/.test(normalized)) {
+                inputEl.value = normalized;
+                inputEl.classList.remove('input-error');
             } else {
-                input.style.borderColor = 'var(--border)';
+                inputEl.classList.add('input-error');
             }
         }
+
+        const DEFAULT_COURSE_SETUP = {
+            par: [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 4, 4],
+            hcpIndex: [1, 18, 5, 14, 9, 10, 13, 2, 17, 4, 15, 8, 11, 12, 7, 3, 16, 6]
+        };
 
         let appState = {
-            players: {},
-            courseSetup: {
-                par: Array(18).fill(4),
-                hcpIndex: [1, 18, 5, 14, 9, 10, 13, 2, 17, 4, 15, 8, 11, 12, 7, 3, 16, 6]
+            tournaments: {
+                "t_default": {
+                    id: "t_default",
+                    name: "Eclectic Saison 2026",
+                    courseSetup: JSON.parse(JSON.stringify(DEFAULT_COURSE_SETUP))
+                }
             },
+            activeTournamentId: "t_default",
+            players: {},
             activePlayerId: null,
             currentMainTab: 'leaderboard',
             subTabs: {
@@ -1688,15 +1726,44 @@
 
         function triggerHapticFeedback() {
             if ('vibrate' in navigator) {
-                try {
-                    navigator.vibrate(35);
-                } catch (e) {
-                    // Vibration ignoriert bei Browser-Policies
-                }
+                try { navigator.vibrate(35); } catch (e) {}
+            }
+        }
+
+        function ensureDataIntegrity() {
+            if (!appState.tournaments || Object.keys(appState.tournaments).length === 0) {
+                const defaultSetup = appState.courseSetup ? JSON.parse(JSON.stringify(appState.courseSetup)) : JSON.parse(JSON.stringify(DEFAULT_COURSE_SETUP));
+                appState.tournaments = {
+                    "t_default": {
+                        id: "t_default",
+                        name: "Eclectic Saison 2026",
+                        courseSetup: defaultSetup
+                    }
+                };
+            }
+            if (!appState.activeTournamentId || !appState.tournaments[appState.activeTournamentId]) {
+                appState.activeTournamentId = Object.keys(appState.tournaments)[0];
+            }
+
+            // Migration von bestehenden Runden ohne tournamentId
+            if (appState.players) {
+                Object.values(appState.players).forEach(player => {
+                    if (player.rounds && Array.isArray(player.rounds)) {
+                        player.rounds.forEach(round => {
+                            if (!round.tournamentId) {
+                                round.tournamentId = appState.activeTournamentId;
+                            }
+                            if (round.date) {
+                                round.date = normalizeToGermanDate(round.date);
+                            }
+                        });
+                    }
+                });
             }
         }
 
         function saveToStorage() {
+            ensureDataIntegrity();
             try {
                 localStorage.setItem('eclectic_golf_pro_data', JSON.stringify(appState));
             } catch (e) {
@@ -1709,10 +1776,23 @@
             }
         }
 
+        function getCurrentCourseSetup() {
+            ensureDataIntegrity();
+            const tourney = appState.tournaments[appState.activeTournamentId];
+            if (tourney && tourney.courseSetup) return tourney.courseSetup;
+            return DEFAULT_COURSE_SETUP;
+        }
+
+        function getActiveTournamentRounds(player) {
+            if (!player || !player.rounds) return [];
+            ensureDataIntegrity();
+            return player.rounds.filter(r => r.tournamentId === appState.activeTournamentId);
+        }
+
         function printLeaderboard() {
             const mainContent = document.querySelector('.main-content');
             if (mainContent) {
-                const formattedDate = getTodayGermanString() + ' um ' + new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                const formattedDate = getTodayGermanDate() + ' um ' + new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
                 mainContent.setAttribute('data-print-date', formattedDate);
             }
             window.print();
@@ -1776,6 +1856,7 @@
 
         function getEclecticProfile(playerId) {
             const player = appState.players[playerId];
+            const setup = getCurrentCourseSetup();
             const profile = {
                 brutto: Array(18).fill(null),
                 netto: Array(18).fill(null),
@@ -1783,28 +1864,27 @@
                 hcpUsed: Array(18).fill(null)
             };
 
-            if (!player || !player.rounds || player.rounds.length === 0) return profile;
+            const rounds = getActiveTournamentRounds(player);
+            if (rounds.length === 0) return profile;
 
             const globalSelect = document.getElementById('global-mode-select');
             const globalMode = globalSelect ? globalSelect.value : 'brutto';
 
-            player.rounds.forEach(round => {
+            rounds.forEach(round => {
                 if (!round || !round.scores) return;
-
-                const germanDate = normalizeToGermanDate(round.date);
 
                 for (let i = 0; i < 18; i++) {
                     const score = round.scores[i];
                     if (score === null || score === undefined || score <= 0) continue;
 
-                    const par = appState.courseSetup.par[i] || 4;
-                    const hcpIdx = appState.courseSetup.hcpIndex[i] || 18;
+                    const par = setup.par[i] || 4;
+                    const hcpIdx = setup.hcpIndex[i] || 18;
                     const netPoints = calculateStableford(score, par, hcpIdx, round.hcp);
 
                     if (profile.brutto[i] === null || score < profile.brutto[i]) {
                         profile.brutto[i] = score;
                         if (globalMode === 'brutto') {
-                            profile.dates[i] = germanDate;
+                            profile.dates[i] = round.date;
                             profile.hcpUsed[i] = round.hcp;
                         }
                     }
@@ -1813,7 +1893,7 @@
                        (netPoints === profile.netto[i] && (profile.brutto[i] !== null && score < profile.brutto[i]))) {
                         profile.netto[i] = netPoints;
                         if (globalMode === 'netto') {
-                            profile.dates[i] = germanDate;
+                            profile.dates[i] = round.date;
                             profile.hcpUsed[i] = round.hcp;
                         }
                     }
@@ -1913,12 +1993,124 @@
             updateViews();
         }
 
+        function populateTournamentSelect() {
+            ensureDataIntegrity();
+            const select = document.getElementById('global-tournament-select');
+            if (!select) return;
+
+            select.innerHTML = '';
+            Object.values(appState.tournaments).forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.name;
+                select.appendChild(opt);
+            });
+            select.value = appState.activeTournamentId;
+        }
+
+        function changeActiveTournament(tournamentId) {
+            if (!appState.tournaments[tournamentId]) return;
+            appState.activeTournamentId = tournamentId;
+            saveToStorage();
+            updateViews();
+        }
+
+        function createTournament() {
+            const input = document.getElementById('new-tournament-name');
+            if (!input) return;
+            const name = input.value.trim();
+            if (!name) {
+                alert("Bitte geben Sie einen Namen für das neue Turnier ein!");
+                return;
+            }
+
+            const id = 't_' + Date.now();
+            appState.tournaments[id] = {
+                id: id,
+                name: name,
+                courseSetup: JSON.parse(JSON.stringify(DEFAULT_COURSE_SETUP))
+            };
+            appState.activeTournamentId = id;
+            input.value = '';
+
+            saveToStorage();
+            updateViews();
+        }
+
+        function deleteTournament(tournamentId) {
+            if (Object.keys(appState.tournaments).length <= 1) {
+                alert("Es muss mindestens ein Turnier im System verbleiben!");
+                return;
+            }
+
+            const tourney = appState.tournaments[tournamentId];
+            if (!tourney) return;
+
+            if (!confirm(`Möchten Sie das Turnier "${tourney.name}" und alle zugehörigen Rundenergebnisse wirklich unwiderruflich löschen?`)) return;
+
+            delete appState.tournaments[tournamentId];
+
+            // Runden aus Spielern entfernen, die zu diesem Turnier gehören
+            Object.values(appState.players).forEach(p => {
+                if (p.rounds) {
+                    p.rounds = p.rounds.filter(r => r.tournamentId !== tournamentId);
+                }
+            });
+
+            if (appState.activeTournamentId === tournamentId) {
+                appState.activeTournamentId = Object.keys(appState.tournaments)[0];
+            }
+
+            saveToStorage();
+            updateViews();
+        }
+
+        function renderTournamentsTable() {
+            const tbody = document.getElementById('tournaments-tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+            ensureDataIntegrity();
+
+            Object.values(appState.tournaments).forEach(t => {
+                let roundCount = 0;
+                Object.values(appState.players).forEach(p => {
+                    if (p.rounds) {
+                        roundCount += p.rounds.filter(r => r.tournamentId === t.id).length;
+                    }
+                });
+
+                const isActive = t.id === appState.activeTournamentId;
+                const tr = document.createElement('tr');
+                if (isActive) tr.className = 'highlight-row';
+
+                tr.innerHTML = `
+                    <td class="text-left"><strong>${escapeHTML(t.name)}</strong></td>
+                    <td>${roundCount} Runden</td>
+                    <td>${isActive ? '<span class="badge" style="background:var(--primary); color:white;">Aktiv</span>' : '<span class="badge">Inaktiv</span>'}</td>
+                    <td>
+                        <button class="sub-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="changeActiveTournament('${escapeHTML(t.id)}')">Aktivieren</button>
+                        <button class="delete-btn" style="padding:4px 8px; font-size:11px;" onclick="deleteTournament('${escapeHTML(t.id)}')">🗑️ Löschen</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         function updateViews() {
+            ensureDataIntegrity();
+            populateTournamentSelect();
             renderPlayerList();
             populateSinglesPlayerFilter();
             populateSinglesDateFilter();
             const modeSelect = document.getElementById('global-mode-select');
             const mode = modeSelect ? modeSelect.value : 'brutto';
+
+            const activeTourney = appState.tournaments[appState.activeTournamentId];
+            const titleEl = document.getElementById('app-title');
+            if (titleEl && activeTourney) {
+                titleEl.innerText = activeTourney.name;
+            }
 
             if (appState.currentMainTab === 'leaderboard') renderLeaderboard(mode);
             else if (appState.currentMainTab === 'singles') renderSinglesTable();
@@ -1929,6 +2121,7 @@
             }
             else if (appState.currentMainTab === 'improved') renderMostImprovedTable();
             else if (appState.currentMainTab === 'difficulty') renderHoleDifficultyTable();
+            else if (appState.currentMainTab === 'tournaments') renderTournamentsTable();
             else if (appState.currentMainTab === 'setup') renderSetupTable();
         }
 
@@ -1952,8 +2145,9 @@
                 
                 li.onclick = () => {
                     appState.activePlayerId = player.id;
-                    if (player.rounds && player.rounds.length > 0) {
-                        const lastHcp = player.rounds[player.rounds.length - 1].hcp;
+                    const rounds = getActiveTournamentRounds(player);
+                    if (rounds.length > 0) {
+                        const lastHcp = rounds[rounds.length - 1].hcp;
                         const hcpInput = document.getElementById('round-hcp');
                         if (hcpInput) hcpInput.value = lastHcp;
                     }
@@ -1966,7 +2160,7 @@
                     updateViews();
                 };
                 
-                const roundsCount = player.rounds ? player.rounds.length : 0;
+                const roundsCount = getActiveTournamentRounds(player).length;
                 const initial = (player.name || '').trim().charAt(0).toUpperCase() || '🏌️';
                 
                 li.innerHTML = `
@@ -2026,14 +2220,10 @@
 
             let datesSet = new Set();
             Object.values(appState.players || {}).forEach(player => {
-                if (player.rounds && player.rounds.length > 0) {
-                    player.rounds.forEach(r => {
-                        if (r.date) {
-                            const formatted = normalizeToGermanDate(r.date);
-                            if (formatted) datesSet.add(formatted);
-                        }
-                    });
-                }
+                const rounds = getActiveTournamentRounds(player);
+                rounds.forEach(r => {
+                    if (r.date) datesSet.add(normalizeToGermanDate(r.date));
+                });
             });
 
             const sortedDates = Array.from(datesSet).sort((a, b) => parseDateString(b) - parseDateString(a));
@@ -2095,17 +2285,13 @@
             }
 
             const modal = document.getElementById('delete-player-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-            }
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeDeletePlayerModal() {
             pendingDeletePlayerId = null;
             const modal = document.getElementById('delete-player-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-            }
+            if (modal) modal.classList.add('hidden');
         }
 
         function confirmDeletePlayer() {
@@ -2163,13 +2349,14 @@
             const table = document.getElementById('leaderboard-table');
             if (!table) return;
             const range = appState.subTabs.leaderboard;
+            const setup = getCurrentCourseSetup();
             let start = 0, end = 18;
             if (range === 'front') { start = 0; end = 9; }
             if (range === 'back') { start = 9; end = 18; }
             
             let html = `<thead><tr><th>Pos</th><th class="text-left">Spieler</th>`;
             for (let i = start; i < end; i++) {
-                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${escapeHTML(appState.courseSetup.par[i] || 4)}</small></th>`;
+                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${escapeHTML(setup.par[i] || 4)}</small></th>`;
             }
             html += `<th>Gesamt (${mode === 'brutto' ? 'Schläge' : 'Punkte'})</th></tr></thead><tbody>`;
             
@@ -2193,7 +2380,7 @@
             rankedPlayers = rankedPlayers.filter(p => p.hasPlayed);
 
             if (rankedPlayers.length === 0) {
-                html += `<tr><td colspan="${(end - start) + 3}" style="padding:16px; color:var(--text-muted);">Keine Ergebnisse für gespielte Runden in dieser Auswahl vorhanden.</td></tr></tbody>`;
+                html += `<tr><td colspan="${(end - start) + 3}" style="padding:16px; color:var(--text-muted);">Keine Ergebnisse für gespielte Runden im aktiven Turnier vorhanden.</td></tr></tbody>`;
                 table.innerHTML = html;
                 return;
             }
@@ -2210,11 +2397,11 @@
                     
                 for (let i = start; i < end; i++) {
                     const scoreVal = mode === 'brutto' ? rp.profile.brutto[i] : rp.profile.netto[i];
-                    const rawDate = rp.profile.dates[i] ? String(rp.profile.dates[i]) : '';
+                    const rawDate = rp.profile.dates[i] ? normalizeToGermanDate(rp.profile.dates[i]) : '';
                     const rawHcp = rp.profile.hcpUsed[i] !== undefined ? String(rp.profile.hcpUsed[i]) : '';
                     
                     const dateInfo = rawDate ? escapeAttr(`Datum: ${rawDate} (HCP: ${rawHcp})`) : '';
-                    const parVal = appState.courseSetup.par[i] || 4;
+                    const parVal = setup.par[i] || 4;
                     
                     if (scoreVal !== null) {
                         const colorClass = getScoreColorClass(scoreVal, parVal, mode);
@@ -2237,6 +2424,7 @@
             const modeSelect = document.getElementById('global-mode-select');
             const mode = modeSelect ? modeSelect.value : 'brutto';
             const range = appState.subTabs.singles;
+            const setup = getCurrentCourseSetup();
             
             const playerFilter = document.getElementById('singles-player-filter');
             const dateFilter = document.getElementById('singles-date-filter');
@@ -2251,24 +2439,22 @@
             
             Object.values(appState.players || {}).forEach(player => {
                 if (selectedPlayerId === 'ALL' || player.id === selectedPlayerId) {
-                    if (player.rounds && player.rounds.length > 0) {
-                        player.rounds.forEach(round => {
-                            const germanDate = normalizeToGermanDate(round.date);
-                            if (selectedDate === 'ALL' || germanDate === selectedDate) {
-                                allRounds.push({
-                                    playerId: player.id,
-                                    playerName: player.name,
-                                    round: round,
-                                    germanDate: germanDate
-                                });
-                            }
-                        });
-                    }
+                    const rounds = getActiveTournamentRounds(player);
+                    rounds.forEach(round => {
+                        const germanDate = normalizeToGermanDate(round.date);
+                        if (selectedDate === 'ALL' || germanDate === selectedDate) {
+                            allRounds.push({
+                                playerId: player.id,
+                                playerName: player.name,
+                                round: round
+                            });
+                        }
+                    });
                 }
             });
 
             allRounds.sort((a, b) => {
-                const dateCompare = parseDateString(b.germanDate) - parseDateString(a.germanDate);
+                const dateCompare = parseDateString(b.round.date) - parseDateString(a.round.date);
                 if (dateCompare !== 0) return dateCompare;
                 return (a.playerName || '').localeCompare(b.playerName || '', 'de', { sensitivity: 'base' });
             });
@@ -2279,12 +2465,12 @@
                 <th>HCPI</th>`;
             
             for (let i = start; i < end; i++) {
-                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${appState.courseSetup.par[i] || 4}</small></th>`;
+                html += `<th>L${i+1}<br><small style='font-size:10px; opacity:0.7;'>P:${setup.par[i] || 4}</small></th>`;
             }
             html += `<th>Summe (${mode === 'brutto' ? 'Brutto' : 'Netto'})</th></tr></thead><tbody>`;
 
             if (allRounds.length === 0) {
-                html += `<tr><td colspan="${(end - start) + 4}">Keine gefilterten Ergebnisse vorhanden.</td></tr></tbody>`;
+                html += `<tr><td colspan="${(end - start) + 4}">Keine gefilterten Ergebnisse für das aktive Turnier vorhanden.</td></tr></tbody>`;
                 table.innerHTML = html;
                 return;
             }
@@ -2298,14 +2484,14 @@
 
                 html += `<tr class="${isCurrent}">
                     <td class="text-left"><strong>${escapeHTML(item.playerName)}</strong></td>
-                    <td><small>${escapeHTML(item.germanDate)}</small></td>
+                    <td><small>${escapeHTML(normalizeToGermanDate(r.date))}</small></td>
                     <td><small>${escapeHTML(r.hcp)}</small></td>`;
 
                 for (let i = start; i < end; i++) {
                     const rawScore = r.scores ? r.scores[i] : null;
                     if (rawScore !== null && rawScore !== undefined && rawScore > 0) {
-                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
-                        const parVal = appState.courseSetup.par[i] || 4;
+                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, setup.par[i] || 4, setup.hcpIndex[i] || 18, r.hcp);
+                        const parVal = setup.par[i] || 4;
                         const colorClass = getScoreColorClass(cellVal, parVal, mode);
                         
                         html += `<td><span class="${escapeHTML(colorClass)}">${escapeHTML(cellVal)}</span></td>`;
@@ -2328,6 +2514,7 @@
             if (!table) return;
             const range = appState.subTabs.matrix;
             const playerId = appState.activePlayerId;
+            const setup = getCurrentCourseSetup();
             
             if (!playerId || !appState.players[playerId]) {
                 table.innerHTML = "<tr><td style='padding:20px;'>Bitte wählen oder erstellen Sie zuerst einen Spieler in der Seitenleiste.</td></tr>";
@@ -2336,6 +2523,7 @@
             
             const player = appState.players[playerId];
             const profile = getEclecticProfile(playerId);
+            const rounds = getActiveTournamentRounds(player);
             
             let start = 0, end = 9;
             if (range === 'back') { start = 9; end = 18; }
@@ -2347,7 +2535,7 @@
             let parSum = 0;
             html += `<tr><td class="text-left"><strong>Platz-PAR</strong></td>`;
             for (let i = start; i < end; i++) {
-                const parVal = appState.courseSetup.par[i] || 4;
+                const parVal = setup.par[i] || 4;
                 html += `<td>${escapeHTML(parVal)}</td>`;
                 parSum += parVal;
             }
@@ -2355,31 +2543,28 @@
             
             html += `<tr><td class="text-left"><strong>HCPI-Lochindex</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td>${escapeHTML(appState.courseSetup.hcpIndex[i] || 18)}</td>`;
+                html += `<td>${escapeHTML(setup.hcpIndex[i] || 18)}</td>`;
             }
             html += `<td>-</td></tr>`;
             
-            if (player.rounds) {
-                player.rounds.forEach(round => {
-                    let roundSum = 0;
-                    let hasData = false;
-                    const germanDate = normalizeToGermanDate(round.date);
-                    html += `<tr><td class="text-left"><small>${escapeHTML(germanDate)} (HCP:${escapeHTML(round.hcp)})</small></td>`;
-                    for (let i = start; i < end; i++) {
-                        const rawScore = round.scores ? round.scores[i] : null;
-                        if (rawScore) {
-                            const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, round.hcp);
-                            const isBest = (mode === 'brutto' && rawScore === profile.brutto[i]) || (mode === 'netto' && cellVal === profile.netto[i]);
-                            html += `<td class="${isBest ? 'best-score' : ''}">${escapeHTML(cellVal)}</td>`;
-                            roundSum += cellVal;
-                            hasData = true;
-                        } else {
-                            html += `<td>-</td>`;
-                        }
+            rounds.forEach(round => {
+                let roundSum = 0;
+                let hasData = false;
+                html += `<tr><td class="text-left"><small>${escapeHTML(normalizeToGermanDate(round.date))} (HCP:${escapeHTML(round.hcp)})</small></td>`;
+                for (let i = start; i < end; i++) {
+                    const rawScore = round.scores ? round.scores[i] : null;
+                    if (rawScore) {
+                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, setup.par[i] || 4, setup.hcpIndex[i] || 18, round.hcp);
+                        const isBest = (mode === 'brutto' && rawScore === profile.brutto[i]) || (mode === 'netto' && cellVal === profile.netto[i]);
+                        html += `<td class="${isBest ? 'best-score' : ''}">${escapeHTML(cellVal)}</td>`;
+                        roundSum += cellVal;
+                        hasData = true;
+                    } else {
+                        html += `<td>-</td>`;
                     }
-                    html += `<td><strong>${hasData ? escapeHTML(roundSum) : '-'}</strong></td></tr>`;
-                });
-            }
+                }
+                html += `<td><strong>${hasData ? escapeHTML(roundSum) : '-'}</strong></td></tr>`;
+            });
             
             let eclecticSum = 0;
             let hasEclectic = false;
@@ -2406,9 +2591,10 @@
             let playerStats = [];
 
             Object.values(appState.players || {}).forEach(player => {
-                if (!player.rounds || player.rounds.length < 2) return;
+                const rounds = getActiveTournamentRounds(player);
+                if (rounds.length < 2) return;
 
-                const sortedRounds = [...player.rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
+                const sortedRounds = [...rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
                 
                 const startHcp = parseFloat(sortedRounds[0].hcp);
                 const endHcp = parseFloat(sortedRounds[sortedRounds.length - 1].hcp);
@@ -2427,7 +2613,7 @@
             });
 
             if (playerStats.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="padding:16px; color:var(--text-muted);">Es werden mindestens 2 absolvierte Runden pro Spieler benötigt, um den Fortschritt zu berechnen.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="padding:16px; color:var(--text-muted);">Es werden mindestens 2 absolvierte Runden pro Spieler im aktiven Turnier benötigt.</td></tr>`;
                 return;
             }
 
@@ -2456,17 +2642,19 @@
             const tbody = document.getElementById('difficulty-tbody');
             if (!tbody) return;
             tbody.innerHTML = '';
+            const setup = getCurrentCourseSetup();
 
             let holeStats = Array(18).fill(null).map((_, i) => ({
                 holeNum: i + 1,
-                par: appState.courseSetup.par[i] || 4,
-                hcpIndex: appState.courseSetup.hcpIndex[i] || (i + 1),
+                par: setup.par[i] || 4,
+                hcpIndex: setup.hcpIndex[i] || (i + 1),
                 totalStrokes: 0,
                 count: 0
             }));
 
             Object.values(appState.players || {}).forEach(player => {
-                (player.rounds || []).forEach(round => {
+                const rounds = getActiveTournamentRounds(player);
+                rounds.forEach(round => {
                     (round.scores || []).forEach((score, i) => {
                         if (score && score > 0) {
                             holeStats[i].totalStrokes += score;
@@ -2479,7 +2667,7 @@
             const activeHoles = holeStats.filter(h => h.count > 0);
 
             if (activeHoles.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="padding:16px; color:var(--text-muted);">Keine Rundendaten vorhanden für eine Loch-Analyse.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="padding:16px; color:var(--text-muted);">Keine Rundendaten im aktuellen Turnier vorhanden.</td></tr>`;
                 return;
             }
 
@@ -2537,6 +2725,7 @@
             if (!appState.chartsExpanded) return;
 
             const playerId = appState.activePlayerId;
+            const setup = getCurrentCourseSetup();
             const trendCanvas = document.getElementById('trend-canvas');
             const hcpCanvas = document.getElementById('hcp-canvas');
             const distCanvas = document.getElementById('distribution-canvas');
@@ -2552,16 +2741,18 @@
 
             if (!trendInfo) return;
 
-            if (!playerId || !appState.players[playerId] || !appState.players[playerId].rounds || appState.players[playerId].rounds.length === 0) {
-                drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine Runden vorhanden");
-                drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine Runden vorhanden");
-                drawEmptyChart(distInfo.ctx, distInfo.width, distInfo.height, "Keine Runden vorhanden");
-                drawEmptyChart(parTypeInfo.ctx, parTypeInfo.width, parTypeInfo.height, "Keine Runden vorhanden");
+            const player = appState.players[playerId];
+            const rounds = getActiveTournamentRounds(player);
+
+            if (!playerId || !player || rounds.length === 0) {
+                drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine Runden im aktuellen Turnier");
+                drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine Runden im aktuellen Turnier");
+                drawEmptyChart(distInfo.ctx, distInfo.width, distInfo.height, "Keine Runden im aktuellen Turnier");
+                drawEmptyChart(parTypeInfo.ctx, parTypeInfo.width, parTypeInfo.height, "Keine Runden im aktuellen Turnier");
                 return;
             }
 
-            const player = appState.players[playerId];
-            const sortedRounds = [...player.rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
+            const sortedRounds = [...rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
 
             if (trendTitle) trendTitle.innerText = `Trend der Runden-Gesamtergebnisse (${mode === 'brutto' ? 'Schläge' : 'Netto-Punkte'})`;
             
@@ -2570,7 +2761,7 @@
                 for (let i = 0; i < 18; i++) {
                     const score = r.scores ? r.scores[i] : null;
                     if (score && score > 0) {
-                        sum += mode === 'brutto' ? score : calculateStableford(score, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
+                        sum += mode === 'brutto' ? score : calculateStableford(score, setup.par[i] || 4, setup.hcpIndex[i] || 18, r.hcp);
                         count++;
                     }
                 }
@@ -2591,8 +2782,8 @@
                     const score = r.scores ? r.scores[i] : null;
                     if (score && score > 0) {
                         totalScoresCount++;
-                        const val = mode === 'brutto' ? score : calculateStableford(score, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
-                        const cls = getScoreColorClass(val, appState.courseSetup.par[i] || 4, mode);
+                        const val = mode === 'brutto' ? score : calculateStableford(score, setup.par[i] || 4, setup.hcpIndex[i] || 18, r.hcp);
+                        const cls = getScoreColorClass(val, setup.par[i] || 4, mode);
                         if (cls === 'score-eagle') counts.eagle++;
                         else if (cls === 'score-birdie') counts.birdie++;
                         else if (cls === 'score-par') counts.par++;
@@ -2607,7 +2798,7 @@
             sortedRounds.forEach(r => {
                 for (let i = 0; i < 18; i++) {
                     const score = r.scores ? r.scores[i] : null;
-                    const holePar = appState.courseSetup.par[i] || 4;
+                    const holePar = setup.par[i] || 4;
                     if (score && score > 0 && parStats[holePar]) {
                         parStats[holePar].sumDiff += (score - holePar);
                         parStats[holePar].count++;
@@ -2846,24 +3037,23 @@
             if (!tbody) return;
             tbody.innerHTML = '';
             const playerId = appState.activePlayerId;
+            const player = appState.players[playerId];
+            const rounds = getActiveTournamentRounds(player);
             
-            if (!playerId || !appState.players[playerId] || !appState.players[playerId].rounds || appState.players[playerId].rounds.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:16px;">Keine Runden für diesen Spieler vorhanden.</td></tr>`;
+            if (!playerId || !player || rounds.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:16px;">Keine Runden für diesen Spieler im aktiven Turnier vorhanden.</td></tr>`;
                 return;
             }
             
-            const player = appState.players[playerId];
-            
-            player.rounds.forEach(round => {
+            rounds.forEach(round => {
                 let frontSum = 0, backSum = 0;
                 for(let i=0; i<9; i++) if (round.scores && round.scores[i]) frontSum += round.scores[i];
                 for(let i=9; i<18; i++) if (round.scores && round.scores[i]) backSum += round.scores[i];
                 let totalSum = frontSum + backSum;
-                const germanDate = normalizeToGermanDate(round.date);
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${escapeHTML(germanDate)}</strong></td>
+                    <td><strong>${escapeHTML(normalizeToGermanDate(round.date))}</strong></td>
                     <td>HCPI: ${escapeHTML(round.hcp)}</td>
                     <td><small>${escapeHTML(round.type || '18-Loch')}</small></td>
                     <td>${frontSum > 0 ? escapeHTML(frontSum) : '-'}</td>
@@ -2924,7 +3114,7 @@
 
             const roundDateInput = document.getElementById('round-date');
             if (roundDateInput) {
-                roundDateInput.value = getTodayGermanString();
+                roundDateInput.value = getTodayGermanDate();
             }
 
             for (let i = 0; i < 18; i++) {
@@ -2955,20 +3145,23 @@
         }
 
         function deleteAllRounds() {
+            const activeTourney = appState.tournaments[appState.activeTournamentId];
+            const tourneyName = activeTourney ? activeTourney.name : "aktuellen Turnier";
+
             const firstConfirm = confirm(
-                "🚨 ACHTUNG: Möchten Sie WIRKLICH ALLE eingetragenen Runden ALLER Spieler unwiderruflich löschen?\n\nSpielerprofile und das Platz-Setup bleiben erhalten."
+                `🚨 ACHTUNG: Möchten Sie WIRKLICH ALLE eingetragenen Runden ALLER Spieler im Turnier "${tourneyName}" unwiderruflich löschen?\n\nSpielerprofile und Platz-Setups bleiben erhalten.`
             );
 
             if (!firstConfirm) return;
 
             const userInput = prompt(
-                "Um das Löschen ALLER Runden zu bestätigen, geben Sie bitte das Wort 'LÖSCHEN' in Großbuchstaben ein:"
+                "Um das Löschen ALLER Runden im Turnier zu bestätigen, geben Sie bitte das Wort 'LÖSCHEN' ein:"
             );
 
             if (userInput === "LÖSCHEN") {
                 Object.keys(appState.players).forEach(playerId => {
-                    if (appState.players[playerId]) {
-                        appState.players[playerId].rounds = [];
+                    if (appState.players[playerId] && appState.players[playerId].rounds) {
+                        appState.players[playerId].rounds = appState.players[playerId].rounds.filter(r => r.tournamentId !== appState.activeTournamentId);
                     }
                 });
 
@@ -2979,7 +3172,7 @@
                 saveToStorage();
                 updateViews();
 
-                alert("✅ Alle Runden wurden erfolgreich gelöscht.");
+                alert("✅ Alle Runden des gewählten Turniers wurden erfolgreich gelöscht.");
             } else if (userInput !== null) {
                 alert("❌ Bestätigung fehlgeschlagen. Es wurden keine Runden gelöscht.");
             }
@@ -3003,7 +3196,8 @@
         }
 
         function createScoreInputHTML(index) {
-            const holePar = appState.courseSetup.par[index] || 4;
+            const setup = getCurrentCourseSetup();
+            const holePar = setup.par[index] || 4;
             return `
                 <div class="score-field">
                     <label>Loch ${index + 1} <small style="opacity:0.7;">(P:${escapeHTML(holePar)})</small></label>
@@ -3065,11 +3259,13 @@
             const input = document.getElementById(`input-hole-${holeIndex}`);
             if (!input) return;
 
+            const setup = getCurrentCourseSetup();
+
             if (deltaOrAction === 'clear') {
                 input.value = '';
                 input.classList.remove('filled', 'input-error');
             } else {
-                const holePar = appState.courseSetup.par[holeIndex] || 4;
+                const holePar = setup.par[holeIndex] || 4;
                 const scoreVal = holePar + deltaOrAction;
                 input.value = scoreVal;
                 input.classList.add('filled');
@@ -3140,15 +3336,12 @@
             
             const dateEl = document.getElementById('round-date');
             const hcpEl = document.getElementById('round-hcp');
-            
-            let dateVal = dateEl ? dateEl.value.trim() : '';
-            dateVal = normalizeToGermanDate(dateVal);
-            
+            const rawDate = dateEl ? dateEl.value.trim() : '';
+            const date = normalizeToGermanDate(rawDate);
             const hcp = hcpEl ? parseFloat(hcpEl.value) : NaN;
             
-            if (!dateVal || !isValidGermanDate(dateVal) || isNaN(hcp)) { 
-                alert("Bitte gib ein gültiges Spieldatum im Format TT.MM.JJJJ und ein tagesaktuelles Handicap an!"); 
-                if (dateEl) dateEl.focus();
+            if (!date || !/^\d{2}\.\d{2}\.\d{4}$/.test(date) || isNaN(hcp)) { 
+                alert("Bitte gib ein gültiges Datum im Format DD.MM.YYYY und ein tagesaktuelles Handicap an!"); 
                 return; 
             }
             
@@ -3210,7 +3403,8 @@
                 if (roundIdx !== -1) {
                     appState.players[playerId].rounds[roundIdx] = {
                         id: editingRoundId,
-                        date: dateVal,
+                        tournamentId: appState.activeTournamentId,
+                        date: date,
                         hcp: hcp,
                         type: roundType,
                         scores: scores
@@ -3219,7 +3413,8 @@
             } else {
                 appState.players[playerId].rounds.push({ 
                     id: 'r_' + Date.now(), 
-                    date: dateVal, 
+                    tournamentId: appState.activeTournamentId,
+                    date: date, 
                     hcp: hcp, 
                     type: roundType,
                     scores: scores 
@@ -3235,6 +3430,8 @@
             const table = document.getElementById('setup-table');
             if (!table) return;
             const range = appState.subTabs.setup;
+            const setup = getCurrentCourseSetup();
+
             let start = 0, end = 9;
             if (range === 'back') { start = 9; end = 18; }
             
@@ -3242,17 +3439,23 @@
             for (let i = start; i < end; i++) { html += `<th>Loch ${i+1}</th>`; }
             html += `</tr></thead><tbody><tr><td class="text-left"><strong>PAR-Vorgabe</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td><input type="number" id="setup-par-${i}" value="${escapeHTML(appState.courseSetup.par[i] || 4)}" min="3" max="6" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
+                html += `<td><input type="number" id="setup-par-${i}" value="${escapeHTML(setup.par[i] || 4)}" min="3" max="6" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
             }
             html += `</tr><tr><td class="text-left"><strong>HCPI-Schwierigkeitsindex (1-18)</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td><input type="number" id="setup-hcpi-${i}" value="${escapeHTML(appState.courseSetup.hcpIndex[i] || 18)}" min="1" max="18" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
+                html += `<td><input type="number" id="setup-hcpi-${i}" value="${escapeHTML(setup.hcpIndex[i] || 18)}" min="1" max="18" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
             }
             html += `</tr></tbody>`;
             table.innerHTML = html;
         }
 
         function saveSetupQuietly() {
+            ensureDataIntegrity();
+            const tourney = appState.tournaments[appState.activeTournamentId];
+            if (!tourney) return;
+
+            if (!tourney.courseSetup) tourney.courseSetup = JSON.parse(JSON.stringify(DEFAULT_COURSE_SETUP));
+
             for (let i = 0; i < 18; i++) {
                 const parEl = document.getElementById(`setup-par-${i}`);
                 const hcpiEl = document.getElementById(`setup-hcpi-${i}`);
@@ -3260,14 +3463,14 @@
                 if (parEl) {
                     const parVal = parseInt(parEl.value, 10);
                     if (!isNaN(parVal) && parVal >= 3 && parVal <= 6) {
-                        appState.courseSetup.par[i] = parVal;
+                        tourney.courseSetup.par[i] = parVal;
                     }
                 }
 
                 if (hcpiEl) {
                     const hcpiVal = parseInt(hcpiEl.value, 10);
                     if (!isNaN(hcpiVal) && hcpiVal >= 1 && hcpiVal <= 18) {
-                        appState.courseSetup.hcpIndex[i] = hcpiVal;
+                        tourney.courseSetup.hcpIndex[i] = hcpiVal;
                     }
                 }
             }
@@ -3276,15 +3479,16 @@
 
         function saveSetup() {
             saveSetupQuietly();
-            alert("Platz-Layout erfolgreich aktualisiert!");
+            alert("Platz-Layout für das aktuelle Turnier erfolgreich aktualisiert!");
             updateViews();
         }
 
         function exportJSON() {
+            ensureDataIntegrity();
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "eclectic_golf_backup.json");
+            downloadAnchor.setAttribute("download", `eclectic_golf_backup_${getTodayGermanDate()}.json`);
             document.body.appendChild(downloadAnchor);
             downloadAnchor.click();
             downloadAnchor.remove();
@@ -3297,8 +3501,9 @@
             reader.onload = function(e) {
                 try {
                     const importedState = JSON.parse(e.target.result);
-                    if (importedState.players && importedState.courseSetup) {
-                        appState = importedState;
+                    if (importedState.players) {
+                        appState = Object.assign(appState, importedState);
+                        ensureDataIntegrity();
                         saveToStorage();
                         applyTheme();
                         updateViews();
@@ -3357,12 +3562,12 @@
                         if (!cols[dateIdx] || !cols[playerIdx]) continue;
 
                         const rawDate = cols[dateIdx].trim();
-                        const formattedDate = normalizeToGermanDate(rawDate);
+                        const germanDate = normalizeToGermanDate(rawDate);
                         const playerName = cols[playerIdx].trim();
                         const rawHcp = parseFloat((cols[hcpIdx] || '').replace(',', '.'));
                         const nineVal = (cols[nineIdx] || '').toLowerCase();
 
-                        if (!formattedDate || !playerName || isNaN(rawHcp)) continue;
+                        if (!germanDate || !playerName || isNaN(rawHcp)) continue;
 
                         const isFront = nineVal.includes('front') || nineVal.includes('1-9') || nineVal === 'f';
                         const isBack = nineVal.includes('back') || nineVal.includes('10-18') || nineVal === 'b';
@@ -3384,18 +3589,18 @@
 
                         if (!playerObj.rounds) playerObj.rounds = [];
 
-                        let existingRound = playerObj.rounds.find(r => normalizeToGermanDate(r.date) === formattedDate);
+                        let existingRound = playerObj.rounds.find(r => r.tournamentId === appState.activeTournamentId && normalizeToGermanDate(r.date) === germanDate);
                         if (!existingRound) {
                             existingRound = {
                                 id: 'r_' + Date.now() + '_' + Math.floor(Math.random()*1000),
-                                date: formattedDate,
+                                tournamentId: appState.activeTournamentId,
+                                date: germanDate,
                                 hcp: rawHcp,
                                 scores: Array(18).fill(null)
                             };
                             playerObj.rounds.push(existingRound);
                         } else {
                             existingRound.hcp = rawHcp;
-                            existingRound.date = formattedDate;
                         }
 
                         const startHoleOffset = isFront ? 0 : 9;
@@ -3421,7 +3626,7 @@
                     if (importedRoundsCount > 0) {
                         saveToStorage();
                         updateViews();
-                        alert(`${importedRoundsCount} Datensätze erfolgreich aus der CSV-Datei importiert!`);
+                        alert(`${importedRoundsCount} Datensätze erfolgreich aus der CSV-Datei in das aktuelle Turnier importiert!`);
                     } else {
                         alert("Es konnten keine gültigen Runden aus der CSV-Datei gelesen werden.");
                     }
@@ -3439,6 +3644,7 @@
             const modeSelect = document.getElementById('global-mode-select');
             const mode = modeSelect ? modeSelect.value : 'brutto';
             const range = appState.subTabs.leaderboard;
+            const setup = getCurrentCourseSetup();
             let start = 0, end = 18;
             if (range === 'front') { start = 0; end = 9; }
             if (range === 'back') { start = 9; end = 18; }
@@ -3481,7 +3687,7 @@
             let parRow = ["-", "PAR-Vorgabe"];
             let parSum = 0;
             for (let i = start; i < end; i++) {
-                const parVal = appState.courseSetup.par[i] || 4;
+                const parVal = setup.par[i] || 4;
                 parRow.push(parVal);
                 parSum += parVal;
             }
@@ -3490,7 +3696,7 @@
 
             let hcpiRow = ["-", "HCPI-Lochindex"];
             for (let i = start; i < end; i++) {
-                hcpiRow.push(appState.courseSetup.hcpIndex[i] || 18);
+                hcpiRow.push(setup.hcpIndex[i] || 18);
             }
             hcpiRow.push("-");
             exportData.push(hcpiRow);
@@ -3543,7 +3749,7 @@
                     const colIdx = (i - start) + 2;
                     const cellAddress = XLSX.utils.encode_cell({ r: excelRow, c: colIdx });
                     const scoreVal = mode === 'brutto' ? rp.profile.brutto[i] : rp.profile.netto[i];
-                    const parVal = appState.courseSetup.par[i] || 4;
+                    const parVal = setup.par[i] || 4;
 
                     if (wsLeaderboard[cellAddress]) {
                         if (scoreVal !== null) {
@@ -3574,113 +3780,6 @@
             wsLeaderboard['!cols'] = colWidthsLb;
 
             XLSX.utils.book_append_sheet(workbook, wsLeaderboard, "Leaderboard");
-
-            /* TAB 2: MOST IMPROVED PLAYER */
-            let improvedData = [
-                ["Rang", "Spieler", "Start-HCPI", "End-HCPI", "HCPI-Reduktion", "USGA Factor"]
-            ];
-
-            let playerStats = [];
-            Object.values(appState.players || {}).forEach(player => {
-                if (!player.rounds || player.rounds.length < 2) return;
-                const sortedRounds = [...player.rounds].sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
-                const startHcp = parseFloat(sortedRounds[0].hcp);
-                const endHcp = parseFloat(sortedRounds[sortedRounds.length - 1].hcp);
-                const hcpDiff = startHcp - endHcp;
-                const factor = (startHcp + 12) / (endHcp + 12);
-
-                playerStats.push({
-                    name: player.name,
-                    startHcp,
-                    endHcp,
-                    diff: hcpDiff,
-                    factor: parseFloat(factor.toFixed(3))
-                });
-            });
-
-            playerStats.sort((a, b) => b.factor - a.factor);
-
-            playerStats.forEach((p, idx) => {
-                improvedData.push([
-                    idx + 1,
-                    p.name,
-                    p.startHcp.toFixed(1),
-                    p.endHcp.toFixed(1),
-                    p.diff > 0 ? `-${p.diff.toFixed(1)}` : `+${Math.abs(p.diff).toFixed(1)}`,
-                    p.factor.toFixed(3)
-                ]);
-            });
-
-            const wsImproved = XLSX.utils.aoa_to_sheet(improvedData);
-
-            for (let col = 0; col < 6; col++) {
-                const cellAddr = XLSX.utils.encode_cell({ r: 0, c: col });
-                if (wsImproved[cellAddr]) wsImproved[cellAddr].s = headerStyle;
-            }
-
-            wsImproved['!cols'] = [
-                { wch: 8 }, { wch: 22 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 14 }
-            ];
-
-            XLSX.utils.book_append_sheet(workbook, wsImproved, "Meistverbessert");
-
-            /* TAB 3: HOLE DIFFICULTY ANALYSIS */
-            let difficultyData = [
-                ["Rang", "Loch #", "PAR", "HCP Index", "Gespielte Runden", "Ø Schlagzahl", "Ø über/unter PAR"]
-            ];
-
-            let holeStats = Array(18).fill(null).map((_, i) => ({
-                holeNum: i + 1,
-                par: appState.courseSetup.par[i] || 4,
-                hcpIndex: appState.courseSetup.hcpIndex[i] || (i + 1),
-                totalStrokes: 0,
-                count: 0
-            }));
-
-            Object.values(appState.players || {}).forEach(player => {
-                (player.rounds || []).forEach(round => {
-                    (round.scores || []).forEach((score, i) => {
-                        if (score && score > 0) {
-                            holeStats[i].totalStrokes += score;
-                            holeStats[i].count += 1;
-                        }
-                    });
-                });
-            });
-
-            const activeHoles = holeStats.filter(h => h.count > 0);
-            activeHoles.forEach(h => {
-                h.avgScore = h.totalStrokes / h.count;
-                h.overPar = h.avgScore - h.par;
-            });
-
-            activeHoles.sort((a, b) => b.overPar - a.overPar);
-
-            activeHoles.forEach((h, idx) => {
-                difficultyData.push([
-                    idx + 1,
-                    `Loch ${h.holeNum}`,
-                    h.par,
-                    h.hcpIndex,
-                    h.count,
-                    h.avgScore.toFixed(2),
-                    h.overPar > 0 ? `+${h.overPar.toFixed(2)}` : h.overPar.toFixed(2)
-                ]);
-            });
-
-            const wsDifficulty = XLSX.utils.aoa_to_sheet(difficultyData);
-
-            for (let col = 0; col < 7; col++) {
-                const cellAddr = XLSX.utils.encode_cell({ r: 0, c: col });
-                if (wsDifficulty[cellAddr]) wsDifficulty[cellAddr].s = headerStyle;
-            }
-
-            wsDifficulty['!cols'] = [
-                { wch: 8 }, { wch: 12 }, { wch: 8 }, { wch: 12 }, { wch: 18 }, { wch: 14 }, { wch: 18 }
-            ];
-
-            XLSX.utils.book_append_sheet(workbook, wsDifficulty, "Loch-Schwierigkeit");
-
             XLSX.writeFile(workbook, `eclectic_turnier_bericht_${range}_${mode}.xlsx`);
         }
 
@@ -3688,6 +3787,7 @@
             const modeSelect = document.getElementById('global-mode-select');
             const mode = modeSelect ? modeSelect.value : 'brutto';
             const range = appState.subTabs.singles;
+            const setup = getCurrentCourseSetup();
             
             const playerFilter = document.getElementById('singles-player-filter');
             const dateFilter = document.getElementById('singles-date-filter');
@@ -3709,23 +3809,21 @@
             let allRounds = [];
             Object.values(appState.players || {}).forEach(player => {
                 if (selectedPlayerId === 'ALL' || player.id === selectedPlayerId) {
-                    if (player.rounds && player.rounds.length > 0) {
-                        player.rounds.forEach(round => {
-                            const germanDate = normalizeToGermanDate(round.date);
-                            if (selectedDate === 'ALL' || germanDate === selectedDate) {
-                                allRounds.push({
-                                    playerName: player.name,
-                                    round: round,
-                                    germanDate: germanDate
-                                });
-                            }
-                        });
-                    }
+                    const rounds = getActiveTournamentRounds(player);
+                    rounds.forEach(round => {
+                        const germanDate = normalizeToGermanDate(round.date);
+                        if (selectedDate === 'ALL' || germanDate === selectedDate) {
+                            allRounds.push({
+                                playerName: player.name,
+                                round: round
+                            });
+                        }
+                    });
                 }
             });
 
             allRounds.sort((a, b) => {
-                const dateCompare = parseDateString(b.germanDate) - parseDateString(a.germanDate);
+                const dateCompare = parseDateString(b.round.date) - parseDateString(a.round.date);
                 if (dateCompare !== 0) return dateCompare;
                 return (a.playerName || '').localeCompare(b.playerName || '', 'de', { sensitivity: 'base' });
             });
@@ -3739,14 +3837,14 @@
 
             allRounds.forEach(item => {
                 const r = item.round;
-                let row = [item.playerName, item.germanDate, r.hcp];
+                let row = [item.playerName, normalizeToGermanDate(r.date), r.hcp];
                 let sum = 0;
                 let hasData = false;
 
                 for (let i = start; i < end; i++) {
                     const rawScore = r.scores ? r.scores[i] : null;
                     if (rawScore !== null && rawScore !== undefined && rawScore > 0) {
-                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
+                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, setup.par[i] || 4, setup.hcpIndex[i] || 18, r.hcp);
                         row.push(cellVal);
                         sum += cellVal;
                         hasData = true;
@@ -3784,8 +3882,8 @@
                     const rawScore = r.scores ? r.scores[i] : null;
 
                     if (worksheet[cellAddress] && rawScore !== null && rawScore !== undefined && rawScore > 0) {
-                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, appState.courseSetup.par[i] || 4, appState.courseSetup.hcpIndex[i] || 18, r.hcp);
-                        const parVal = appState.courseSetup.par[i] || 4;
+                        const cellVal = mode === 'brutto' ? rawScore : calculateStableford(rawScore, setup.par[i] || 4, setup.hcpIndex[i] || 18, r.hcp);
+                        const parVal = setup.par[i] || 4;
                         const colorClass = getScoreColorClass(cellVal, parVal, mode);
 
                         if (colorMap[colorClass]) {
@@ -3819,7 +3917,7 @@
         window.onload = function() {
             const roundDateInput = document.getElementById('round-date');
             if (roundDateInput) {
-                roundDateInput.value = getTodayGermanString();
+                roundDateInput.value = getTodayGermanDate();
             }
             
             generateAddScoreInputs();
@@ -3835,6 +3933,8 @@
                     console.error("Fehler beim Laden aus localStorage:", e);
                 }
             }
+
+            ensureDataIntegrity();
 
             if (appState.players && Object.keys(appState.players).length > 0) {
                 if (!appState.activePlayerId || !appState.players[appState.activePlayerId]) {
@@ -3883,8 +3983,9 @@
           firebaseSaveTimeout = setTimeout(async () => {
               try {
                   await setDoc(docRef, {
-                      players: stateData.players || {},
-                      courseSetup: stateData.courseSetup || {}
+                      tournaments: stateData.tournaments || {},
+                      activeTournamentId: stateData.activeTournamentId || "t_default",
+                      players: stateData.players || {}
                   });
                   setSyncStatus(true);
               } catch (e) {
@@ -3901,9 +4002,12 @@
 
           if (docSnap.exists()) {
               const data = docSnap.data();
-              if (data && data.players && data.courseSetup) {
+              if (data && data.players) {
+                  if (data.tournaments) appState.tournaments = data.tournaments;
+                  if (data.activeTournamentId) appState.activeTournamentId = data.activeTournamentId;
                   appState.players = data.players;
-                  appState.courseSetup = data.courseSetup;
+                  
+                  ensureDataIntegrity();
                   
                   if (!appState.activePlayerId || !appState.players[appState.activePlayerId]) {
                       const firstPlayerId = Object.keys(appState.players)[0];
