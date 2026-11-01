@@ -1431,12 +1431,12 @@
             <div class="card">
                 <h3>Einzelrunde erfassen / bearbeiten</h3>
                 <div class="info-box">
-                    <strong>💡 Flexibler Runden-Import & Bearbeitung:</strong> Trage 18 Löcher ein oder passe bestehende Ergebnisse an. Die App berechnet die Summen automatisch live.
+                    <strong>💡 Flexibler Runden-Import & Bearbeitung:</strong> Trage 18 Löcher ein oder passe bestehende Ergebnisse an. Geben Sie das Datum im deutschen Format <strong>TT.MM.JJJJ</strong> ein.
                 </div>
                 <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
                     <div class="form-group" style="flex: 1; min-width: 150px;">
-                        <label for="round-date" style="color: var(--text); font-weight:600;">Spieldatum:</label>
-                        <input type="date" id="round-date" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; background: var(--input-bg); color: var(--text);">
+                        <label for="round-date" style="color: var(--text); font-weight:600;">Spieldatum (TT.MM.JJJJ):</label>
+                        <input type="text" id="round-date" placeholder="DD.MM.YYYY" maxlength="10" onblur="formatAndValidateDateInput(this)" style="border: 1px solid var(--border); padding: 8px 12px; border-radius: 6px; background: var(--input-bg); color: var(--text);">
                     </div>
                     <div class="form-group" style="flex: 1; min-width: 150px;">
                         <label for="round-hcp" style="color: var(--text); font-weight:600;">Tages-Handicap (HCPI):</label>
@@ -1560,6 +1560,106 @@
                 .replace(/>/g, '&gt;');
         }
 
+        // UNIFIED GERMAN DATE HELPERS (DD.MM.YYYY)
+        function getTodayGermanString() {
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+
+        function normalizeToGermanDate(dateStr) {
+            if (!dateStr) return '';
+            const trimmed = String(dateStr).trim();
+            if (!trimmed) return '';
+
+            // Handle ISO YYYY-MM-DD
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+                const parts = trimmed.split('-');
+                return `${parts[2]}.${parts[1]}.${parts[0]}`;
+            }
+
+            // Handle DD.MM.YYYY or DD.MM.YY
+            if (trimmed.includes('.')) {
+                const parts = trimmed.split('.');
+                if (parts.length === 3) {
+                    let d = parts[0].padStart(2, '0');
+                    let m = parts[1].padStart(2, '0');
+                    let y = parts[2];
+                    if (y.length === 2) y = '20' + y;
+                    if (d.length === 2 && m.length === 2 && y.length === 4) {
+                        return `${d}.${m}.${y}`;
+                    }
+                }
+            }
+
+            // Fallback: Attempt JS Date parsing
+            const parsed = new Date(trimmed);
+            if (!isNaN(parsed.getTime())) {
+                const day = String(parsed.getDate()).padStart(2, '0');
+                const month = String(parsed.getMonth() + 1).padStart(2, '0');
+                const year = parsed.getFullYear();
+                return `${day}.${month}.${year}`;
+            }
+
+            return trimmed;
+        }
+
+        function parseDateString(dateStr) {
+            if (!dateStr) return 0;
+            const str = String(dateStr).trim();
+
+            if (str.includes('.')) {
+                const parts = str.split('.');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    let year = parseInt(parts[2], 10);
+                    if (year < 100) year += 2000;
+                    const d = new Date(year, month, day);
+                    return isNaN(d.getTime()) ? 0 : d.getTime();
+                }
+            }
+
+            if (str.includes('-')) {
+                const parts = str.split('-');
+                if (parts.length === 3) {
+                    const year = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1;
+                    const day = parseInt(parts[2], 10);
+                    const d = new Date(year, month, day);
+                    return isNaN(d.getTime()) ? 0 : d.getTime();
+                }
+            }
+
+            const ts = new Date(str).getTime();
+            return isNaN(ts) ? 0 : ts;
+        }
+
+        function isValidGermanDate(dateStr) {
+            if (!/^\d{2}\.\d{2}\.\d{4}$/.test(dateStr)) return false;
+            const parts = dateStr.split('.');
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10) - 1;
+            const year = parseInt(parts[2], 10);
+            const dateObj = new Date(year, month, day);
+            return dateObj.getFullYear() === year && dateObj.getMonth() === month && dateObj.getDate() === day;
+        }
+
+        function formatAndValidateDateInput(input) {
+            if (!input) return;
+            const val = input.value.trim();
+            if (!val) return;
+            const normalized = normalizeToGermanDate(val);
+            input.value = normalized;
+            if (!isValidGermanDate(normalized)) {
+                input.style.borderColor = 'var(--error-border)';
+            } else {
+                input.style.borderColor = 'var(--border)';
+            }
+        }
+
         let appState = {
             players: {},
             courseSetup: {
@@ -1591,7 +1691,7 @@
                 try {
                     navigator.vibrate(35);
                 } catch (e) {
-                    // Vibration wird bei strengen Browser-Policies ignoriert
+                    // Vibration ignoriert bei Browser-Policies
                 }
             }
         }
@@ -1612,8 +1712,7 @@
         function printLeaderboard() {
             const mainContent = document.querySelector('.main-content');
             if (mainContent) {
-                const now = new Date();
-                const formattedDate = now.toLocaleDateString('de-DE') + ' um ' + now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                const formattedDate = getTodayGermanString() + ' um ' + new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
                 mainContent.setAttribute('data-print-date', formattedDate);
             }
             window.print();
@@ -1664,15 +1763,6 @@
             }
         }
 
-        function parseDateString(dateStr) {
-            if (!dateStr) return 0;
-            if (dateStr.includes('.')) {
-                const parts = dateStr.split('.');
-                if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
-            }
-            return new Date(dateStr).getTime() || 0;
-        }
-
         function calculateStableford(bruttoScore, par, holeHcpIndex, playerHcp) {
             if (!bruttoScore || bruttoScore <= 0) return 0;
             const courseHcp = Math.round(playerHcp || 0);
@@ -1701,6 +1791,8 @@
             player.rounds.forEach(round => {
                 if (!round || !round.scores) return;
 
+                const germanDate = normalizeToGermanDate(round.date);
+
                 for (let i = 0; i < 18; i++) {
                     const score = round.scores[i];
                     if (score === null || score === undefined || score <= 0) continue;
@@ -1712,7 +1804,7 @@
                     if (profile.brutto[i] === null || score < profile.brutto[i]) {
                         profile.brutto[i] = score;
                         if (globalMode === 'brutto') {
-                            profile.dates[i] = round.date;
+                            profile.dates[i] = germanDate;
                             profile.hcpUsed[i] = round.hcp;
                         }
                     }
@@ -1721,7 +1813,7 @@
                        (netPoints === profile.netto[i] && (profile.brutto[i] !== null && score < profile.brutto[i]))) {
                         profile.netto[i] = netPoints;
                         if (globalMode === 'netto') {
-                            profile.dates[i] = round.date;
+                            profile.dates[i] = germanDate;
                             profile.hcpUsed[i] = round.hcp;
                         }
                     }
@@ -1936,7 +2028,10 @@
             Object.values(appState.players || {}).forEach(player => {
                 if (player.rounds && player.rounds.length > 0) {
                     player.rounds.forEach(r => {
-                        if (r.date) datesSet.add(r.date.trim());
+                        if (r.date) {
+                            const formatted = normalizeToGermanDate(r.date);
+                            if (formatted) datesSet.add(formatted);
+                        }
                     });
                 }
             });
@@ -2158,11 +2253,13 @@
                 if (selectedPlayerId === 'ALL' || player.id === selectedPlayerId) {
                     if (player.rounds && player.rounds.length > 0) {
                         player.rounds.forEach(round => {
-                            if (selectedDate === 'ALL' || (round.date && round.date.trim() === selectedDate)) {
+                            const germanDate = normalizeToGermanDate(round.date);
+                            if (selectedDate === 'ALL' || germanDate === selectedDate) {
                                 allRounds.push({
                                     playerId: player.id,
                                     playerName: player.name,
-                                    round: round
+                                    round: round,
+                                    germanDate: germanDate
                                 });
                             }
                         });
@@ -2171,7 +2268,7 @@
             });
 
             allRounds.sort((a, b) => {
-                const dateCompare = parseDateString(b.round.date) - parseDateString(a.round.date);
+                const dateCompare = parseDateString(b.germanDate) - parseDateString(a.germanDate);
                 if (dateCompare !== 0) return dateCompare;
                 return (a.playerName || '').localeCompare(b.playerName || '', 'de', { sensitivity: 'base' });
             });
@@ -2201,7 +2298,7 @@
 
                 html += `<tr class="${isCurrent}">
                     <td class="text-left"><strong>${escapeHTML(item.playerName)}</strong></td>
-                    <td><small>${escapeHTML(r.date)}</small></td>
+                    <td><small>${escapeHTML(item.germanDate)}</small></td>
                     <td><small>${escapeHTML(r.hcp)}</small></td>`;
 
                 for (let i = start; i < end; i++) {
@@ -2266,7 +2363,8 @@
                 player.rounds.forEach(round => {
                     let roundSum = 0;
                     let hasData = false;
-                    html += `<tr><td class="text-left"><small>${escapeHTML(round.date)} (HCP:${escapeHTML(round.hcp)})</small></td>`;
+                    const germanDate = normalizeToGermanDate(round.date);
+                    html += `<tr><td class="text-left"><small>${escapeHTML(germanDate)} (HCP:${escapeHTML(round.hcp)})</small></td>`;
                     for (let i = start; i < end; i++) {
                         const rawScore = round.scores ? round.scores[i] : null;
                         if (rawScore) {
@@ -2476,13 +2574,13 @@
                         count++;
                     }
                 }
-                return { date: r.date, val: count > 0 ? sum : null };
+                return { date: normalizeToGermanDate(r.date), val: count > 0 ? sum : null };
             }).filter(item => item.val !== null);
 
             if (trendData.length === 0) drawEmptyChart(trendInfo.ctx, trendInfo.width, trendInfo.height, "Keine verwertbaren Runden");
             else drawModernLineChart(trendInfo.ctx, trendInfo.width, trendInfo.height, trendData, "#10b981", "rgba(16, 185, 129, 0.2)");
 
-            const hcpData = sortedRounds.map(r => ({ date: r.date, val: r.hcp })).filter(item => item.val !== undefined && item.val !== null);
+            const hcpData = sortedRounds.map(r => ({ date: normalizeToGermanDate(r.date), val: r.hcp })).filter(item => item.val !== undefined && item.val !== null);
             if (hcpData.length === 0) drawEmptyChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, "Keine HCP-Daten");
             else drawModernLineChart(hcpInfo.ctx, hcpInfo.width, hcpInfo.height, hcpData, "#0284c7", "rgba(2, 132, 199, 0.2)");
 
@@ -2761,10 +2859,11 @@
                 for(let i=0; i<9; i++) if (round.scores && round.scores[i]) frontSum += round.scores[i];
                 for(let i=9; i<18; i++) if (round.scores && round.scores[i]) backSum += round.scores[i];
                 let totalSum = frontSum + backSum;
+                const germanDate = normalizeToGermanDate(round.date);
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${escapeHTML(round.date)}</strong></td>
+                    <td><strong>${escapeHTML(germanDate)}</strong></td>
                     <td>HCPI: ${escapeHTML(round.hcp)}</td>
                     <td><small>${escapeHTML(round.type || '18-Loch')}</small></td>
                     <td>${frontSum > 0 ? escapeHTML(frontSum) : '-'}</td>
@@ -2790,7 +2889,7 @@
 
             const dateEl = document.getElementById('round-date');
             const hcpEl = document.getElementById('round-hcp');
-            if (dateEl) dateEl.value = round.date;
+            if (dateEl) dateEl.value = normalizeToGermanDate(round.date);
             if (hcpEl) hcpEl.value = round.hcp;
 
             for (let i = 0; i < 18; i++) {
@@ -2825,7 +2924,7 @@
 
             const roundDateInput = document.getElementById('round-date');
             if (roundDateInput) {
-                roundDateInput.value = new Date().toISOString().split('T')[0];
+                roundDateInput.value = getTodayGermanString();
             }
 
             for (let i = 0; i < 18; i++) {
@@ -3041,11 +3140,15 @@
             
             const dateEl = document.getElementById('round-date');
             const hcpEl = document.getElementById('round-hcp');
-            const date = dateEl ? dateEl.value : '';
+            
+            let dateVal = dateEl ? dateEl.value.trim() : '';
+            dateVal = normalizeToGermanDate(dateVal);
+            
             const hcp = hcpEl ? parseFloat(hcpEl.value) : NaN;
             
-            if (!date || isNaN(hcp)) { 
-                alert("Bitte gib ein gültiges Datum und tagesaktuelles Handicap an!"); 
+            if (!dateVal || !isValidGermanDate(dateVal) || isNaN(hcp)) { 
+                alert("Bitte gib ein gültiges Spieldatum im Format TT.MM.JJJJ und ein tagesaktuelles Handicap an!"); 
+                if (dateEl) dateEl.focus();
                 return; 
             }
             
@@ -3107,7 +3210,7 @@
                 if (roundIdx !== -1) {
                     appState.players[playerId].rounds[roundIdx] = {
                         id: editingRoundId,
-                        date: date,
+                        date: dateVal,
                         hcp: hcp,
                         type: roundType,
                         scores: scores
@@ -3116,7 +3219,7 @@
             } else {
                 appState.players[playerId].rounds.push({ 
                     id: 'r_' + Date.now(), 
-                    date: date, 
+                    date: dateVal, 
                     hcp: hcp, 
                     type: roundType,
                     scores: scores 
@@ -3254,18 +3357,18 @@
                         if (!cols[dateIdx] || !cols[playerIdx]) continue;
 
                         const rawDate = cols[dateIdx].trim();
+                        const formattedDate = normalizeToGermanDate(rawDate);
                         const playerName = cols[playerIdx].trim();
                         const rawHcp = parseFloat((cols[hcpIdx] || '').replace(',', '.'));
                         const nineVal = (cols[nineIdx] || '').toLowerCase();
 
-                        if (!rawDate || !playerName || isNaN(rawHcp)) continue;
+                        if (!formattedDate || !playerName || isNaN(rawHcp)) continue;
 
                         const isFront = nineVal.includes('front') || nineVal.includes('1-9') || nineVal === 'f';
                         const isBack = nineVal.includes('back') || nineVal.includes('10-18') || nineVal === 'b';
 
                         if (!isFront && !isBack) continue;
 
-                        // OPTIMIERTER NAMENSVERGLEICH: Entfernt ALLE Leerzeichen und ignoriert Groß-/Kleinschreibung
                         const normalizeName = (name) => (name || '').replace(/\s+/g, '').toLowerCase();
                         const normalizedImportName = normalizeName(playerName);
 
@@ -3281,17 +3384,18 @@
 
                         if (!playerObj.rounds) playerObj.rounds = [];
 
-                        let existingRound = playerObj.rounds.find(r => r.date.trim() === rawDate);
+                        let existingRound = playerObj.rounds.find(r => normalizeToGermanDate(r.date) === formattedDate);
                         if (!existingRound) {
                             existingRound = {
                                 id: 'r_' + Date.now() + '_' + Math.floor(Math.random()*1000),
-                                date: rawDate,
+                                date: formattedDate,
                                 hcp: rawHcp,
                                 scores: Array(18).fill(null)
                             };
                             playerObj.rounds.push(existingRound);
                         } else {
                             existingRound.hcp = rawHcp;
+                            existingRound.date = formattedDate;
                         }
 
                         const startHoleOffset = isFront ? 0 : 9;
@@ -3607,10 +3711,12 @@
                 if (selectedPlayerId === 'ALL' || player.id === selectedPlayerId) {
                     if (player.rounds && player.rounds.length > 0) {
                         player.rounds.forEach(round => {
-                            if (selectedDate === 'ALL' || (round.date && round.date.trim() === selectedDate)) {
+                            const germanDate = normalizeToGermanDate(round.date);
+                            if (selectedDate === 'ALL' || germanDate === selectedDate) {
                                 allRounds.push({
                                     playerName: player.name,
-                                    round: round
+                                    round: round,
+                                    germanDate: germanDate
                                 });
                             }
                         });
@@ -3619,7 +3725,7 @@
             });
 
             allRounds.sort((a, b) => {
-                const dateCompare = parseDateString(b.round.date) - parseDateString(a.round.date);
+                const dateCompare = parseDateString(b.germanDate) - parseDateString(a.germanDate);
                 if (dateCompare !== 0) return dateCompare;
                 return (a.playerName || '').localeCompare(b.playerName || '', 'de', { sensitivity: 'base' });
             });
@@ -3633,7 +3739,7 @@
 
             allRounds.forEach(item => {
                 const r = item.round;
-                let row = [item.playerName, r.date, r.hcp];
+                let row = [item.playerName, item.germanDate, r.hcp];
                 let sum = 0;
                 let hasData = false;
 
@@ -3713,7 +3819,7 @@
         window.onload = function() {
             const roundDateInput = document.getElementById('round-date');
             if (roundDateInput) {
-                roundDateInput.value = new Date().toISOString().split('T')[0];
+                roundDateInput.value = getTodayGermanString();
             }
             
             generateAddScoreInputs();
