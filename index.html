@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf V2.3 — Multi-Turnier Edition</title>
+    <title>Eclectic Golf V2.0 </title>
 
     <!-- PWA Meta-Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -595,6 +595,57 @@
             border-bottom: 1px solid var(--border); 
             padding-bottom: 12px; 
             margin-bottom: 18px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .stat-icon {
+            font-size: 28px;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stat-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-info .stat-value {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .stat-info .stat-sub {
+            margin: 2px 0 0 0;
+            font-size: 11px;
+            color: var(--text-muted);
         }
 
         .accordion-header {
@@ -1287,9 +1338,10 @@
         <div class="tabs">
             <button class="tab-btn active" id="tab-leaderboard" onclick="switchMainTab('leaderboard')">🏆 Gruppen-Leaderboard</button>
             <button class="tab-btn" id="tab-singles" onclick="switchMainTab('singles')">📋 Einzelergebnisse</button>
-            <button class="tab-btn" id="tab-matrix" onclick="switchMainTab('matrix')">📊 Einzelspieler-Matrix</button>
+            <button class="tab-btn" id="tab-matrix" onclick="switchMainTab('matrix')">📊 Einzel-Matrix</button>
+            <button class="tab-btn" id="tab-stats" onclick="switchMainTab('stats')">🎯 Sonderwertungen</button>
             <button class="tab-btn" id="tab-improved" onclick="switchMainTab('improved')">📈 Meistverbesserter Spieler</button>
-            <button class="tab-btn" id="tab-difficulty" onclick="switchMainTab('difficulty')">⛳ Loch-Schwierigkeitsanalyse</button>
+            <button class="tab-btn" id="tab-difficulty" onclick="switchMainTab('difficulty')">⛳ Loch-Analyse</button>
             <button class="tab-btn" id="tab-add" onclick="switchMainTab('add')">📝 Runde eintragen</button>
             <button class="tab-btn" id="tab-tournaments" onclick="switchMainTab('tournaments')">🏆 Saisons & Turniere</button>
             <button class="tab-btn" id="tab-setup" onclick="switchMainTab('setup')">⚙️ Platz-Setup (PAR/HCPI)</button>
@@ -1407,6 +1459,93 @@
                             </tr>
                         </thead>
                         <tbody id="history-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: STATS & SPECIAL AWARDS -->
+        <div id="view-stats" class="tab-content hidden">
+            <div class="card">
+                <h3>🌟 Runden-Highlights & Rekorde des Turniers</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🥇</div>
+                        <div class="stat-info">
+                            <h4>Beste Brutto-Tagesrunde</h4>
+                            <div class="stat-value" id="highlight-best-brutto">-</div>
+                            <div class="stat-sub" id="highlight-best-brutto-sub">Keine Runden erfasst</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-info">
+                            <h4>Beste Netto-Tagesrunde</h4>
+                            <div class="stat-value" id="highlight-best-netto">-</div>
+                            <div class="stat-sub" id="highlight-best-netto-sub">Keine Runden erfasst</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🦅</div>
+                        <div class="stat-info">
+                            <h4>Birdie- & Eagle-König</h4>
+                            <div class="stat-value" id="highlight-birdie-king">-</div>
+                            <div class="stat-sub" id="highlight-birdie-king-sub">0 Birdies / Eagles</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚀</div>
+                        <div class="stat-info">
+                            <h4>Größte Loch-Verbesserung</h4>
+                            <div class="stat-value" id="highlight-best-improvement">-</div>
+                            <div class="stat-sub" id="highlight-best-improvement-sub">Einzelloch-Sprung</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🦅 Birdie- & Score-Verteilung der Eclectic-Serie</h3>
+                <div class="info-box">
+                    Übersicht aller erzielten Score-Kategorien (auf Basis aller gespielten Einzellöcher der Turnierserie).
+                </div>
+                <div class="table-responsive">
+                    <table id="stats-awards-table">
+                        <thead>
+                            <tr>
+                                <th>Rang</th>
+                                <th class="text-left">Spieler</th>
+                                <th>🦅 Eagles (-2)</th>
+                                <th>🐤 Birdies (-1)</th>
+                                <th>⚪ Pars (0)</th>
+                                <th>🟠 Bogeys (+1)</th>
+                                <th>🔴 Double Bogey+ (+2)</th>
+                                <th>Gesamt Birdie/Eagle</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-awards-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🏆 Eclectic-Potenzial (Erreichte Traumrunde vs. Platz-PAR)</h3>
+                <div class="info-box">
+                    Zeigt den aktuellen Eclectic-Bestscore jedes Golfers im Vergleich zum offiziellen Platz-PAR (72) sowie die theoretische Gesamteinsparung an Schlägen.
+                </div>
+                <div class="table-responsive">
+                    <table id="stats-potential-table">
+                        <thead>
+                            <tr>
+                                <th>Rang</th>
+                                <th class="text-left">Spieler</th>
+                                <th>Platz-PAR</th>
+                                <th>Eclectic Brutto-Score</th>
+                                <th>Schläge unter / über PAR</th>
+                                <th>Gespielte Runden</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stats-potential-tbody"></tbody>
                     </table>
                 </div>
             </div>
@@ -1745,7 +1884,6 @@
                 appState.activeTournamentId = Object.keys(appState.tournaments)[0];
             }
 
-            // Migration von bestehenden Runden ohne tournamentId
             if (appState.players) {
                 Object.values(appState.players).forEach(player => {
                     if (player.rounds && Array.isArray(player.rounds)) {
@@ -2050,7 +2188,6 @@
 
             delete appState.tournaments[tournamentId];
 
-            // Runden aus Spielern entfernen, die zu diesem Turnier gehören
             Object.values(appState.players).forEach(p => {
                 if (p.rounds) {
                     p.rounds = p.rounds.filter(r => r.tournamentId !== tournamentId);
@@ -2119,6 +2256,7 @@
                 renderHistory(); 
                 updateChartsAccordionUI();
             }
+            else if (appState.currentMainTab === 'stats') renderStatsAndAwards();
             else if (appState.currentMainTab === 'improved') renderMostImprovedTable();
             else if (appState.currentMainTab === 'difficulty') renderHoleDifficultyTable();
             else if (appState.currentMainTab === 'tournaments') renderTournamentsTable();
@@ -2581,6 +2719,181 @@
             }
             html += `<td><strong>${hasEclectic ? escapeHTML(eclecticSum) : '-'}</strong></td></tr></tbody>`;
             table.innerHTML = html;
+        }
+
+        /* RENDER SONDERWERTUNGEN & HIGHLIGHTS */
+        function renderStatsAndAwards() {
+            const setup = getCurrentCourseSetup();
+            let totalPar = setup.par.reduce((a, b) => a + b, 0);
+
+            let bestBrutto = { score: Infinity, player: '-', date: '-' };
+            let bestNetto = { score: -1, player: '-', date: '-' };
+            let birdieKing = { count: 0, player: '-', details: '' };
+            let bestImprovement = { diff: 0, player: '-', hole: '-' };
+
+            let playerAwards = [];
+            let playerPotentials = [];
+
+            Object.values(appState.players || {}).forEach(player => {
+                const rounds = getActiveTournamentRounds(player);
+                const profile = getEclecticProfile(player.id);
+
+                let counts = { eagle: 0, birdie: 0, par: 0, bogey: 0, dbogey: 0 };
+                let holeScoresMap = Array(18).fill(null).map(() => []);
+
+                rounds.forEach(round => {
+                    let rBrutto = 0, rNetto = 0, rComplete = true;
+
+                    for (let i = 0; i < 18; i++) {
+                        const score = round.scores ? round.scores[i] : null;
+                        const par = setup.par[i] || 4;
+                        const hcpIdx = setup.hcpIndex[i] || 18;
+
+                        if (score && score > 0) {
+                            rBrutto += score;
+                            rNetto += calculateStableford(score, par, hcpIdx, round.hcp);
+                            holeScoresMap[i].push(score);
+
+                            const diff = score - par;
+                            if (diff <= -2) counts.eagle++;
+                            else if (diff === -1) counts.birdie++;
+                            else if (diff === 0) counts.par++;
+                            else if (diff === 1) counts.bogey++;
+                            else counts.dbogey++;
+                        } else {
+                            rComplete = false;
+                        }
+                    }
+
+                    if (rComplete && rBrutto < bestBrutto.score) {
+                        bestBrutto = { score: rBrutto, player: player.name, date: normalizeToGermanDate(round.date) };
+                    }
+                    if (rComplete && rNetto > bestNetto.score) {
+                        bestNetto = { score: rNetto, player: player.name, date: normalizeToGermanDate(round.date) };
+                    }
+                });
+
+                // Max Einzelloch-Verbesserung berechnen
+                for (let i = 0; i < 18; i++) {
+                    const scores = holeScoresMap[i];
+                    if (scores.length >= 2) {
+                        const min = Math.min(...scores);
+                        const max = Math.max(...scores);
+                        const diff = max - min;
+                        if (diff > bestImprovement.diff) {
+                            bestImprovement = { diff: diff, player: player.name, hole: `Loch ${i + 1} (${max} ➔ ${min})` };
+                        }
+                    }
+                }
+
+                const totalBirdiesEagles = counts.eagle + counts.birdie;
+                if (totalBirdiesEagles > birdieKing.count) {
+                    birdieKing = {
+                        count: totalBirdiesEagles,
+                        player: player.name,
+                        details: `${counts.eagle} Eagles / ${counts.birdie} Birdies`
+                    };
+                }
+
+                if (rounds.length > 0) {
+                    playerAwards.push({
+                        id: player.id,
+                        name: player.name,
+                        eagle: counts.eagle,
+                        birdie: counts.birdie,
+                        par: counts.par,
+                        bogey: counts.bogey,
+                        dbogey: counts.dbogey,
+                        totalBE: totalBirdiesEagles
+                    });
+
+                    let ecBruttoSum = 0, ecComplete = true;
+                    for (let i = 0; i < 18; i++) {
+                        if (profile.brutto[i] !== null) ecBruttoSum += profile.brutto[i];
+                        else ecComplete = false;
+                    }
+
+                    if (ecComplete) {
+                        const diffPar = ecBruttoSum - totalPar;
+                        playerPotentials.push({
+                            id: player.id,
+                            name: player.name,
+                            totalPar: totalPar,
+                            ecBrutto: ecBruttoSum,
+                            diffPar: diffPar,
+                            roundsCount: rounds.length
+                        });
+                    }
+                }
+            });
+
+            // HIGHLIGHT KARTEN UPDATEN
+            document.getElementById('highlight-best-brutto').innerText = bestBrutto.score !== Infinity ? `${bestBrutto.score} Schläge` : '-';
+            document.getElementById('highlight-best-brutto-sub').innerText = bestBrutto.score !== Infinity ? `${escapeHTML(bestBrutto.player)} (${bestBrutto.date})` : 'Keine 18-Loch Runden';
+
+            document.getElementById('highlight-best-netto').innerText = bestNetto.score !== -1 ? `${bestNetto.score} Pkt` : '-';
+            document.getElementById('highlight-best-netto-sub').innerText = bestNetto.score !== -1 ? `${escapeHTML(bestNetto.player)} (${bestNetto.date})` : 'Keine 18-Loch Runden';
+
+            document.getElementById('highlight-birdie-king').innerText = birdieKing.count > 0 ? `${birdieKing.count} x` : '-';
+            document.getElementById('highlight-birdie-king-sub').innerText = birdieKing.count > 0 ? `${escapeHTML(birdieKing.player)} (${birdieKing.details})` : 'Noch keine Birdies/Eagles';
+
+            document.getElementById('highlight-best-improvement').innerText = bestImprovement.diff > 0 ? `-${bestImprovement.diff} Schläge` : '-';
+            document.getElementById('highlight-best-improvement-sub').innerText = bestImprovement.diff > 0 ? `${escapeHTML(bestImprovement.player)} an ${bestImprovement.hole}` : 'Keine Verbesserung';
+
+            // TABELLE: BIRDIE & EAGLE VERTEILUNG
+            const awardsTbody = document.getElementById('stats-awards-tbody');
+            if (awardsTbody) {
+                awardsTbody.innerHTML = '';
+                if (playerAwards.length === 0) {
+                    awardsTbody.innerHTML = `<tr><td colspan="8" style="padding:16px; color:var(--text-muted);">Keine Rundendaten für das aktive Turnier vorhanden.</td></tr>`;
+                } else {
+                    playerAwards.sort((a, b) => b.totalBE - a.totalBE || b.birdie - a.birdie);
+                    playerAwards.forEach((p, idx) => {
+                        const isCurrent = p.id === appState.activePlayerId ? 'highlight-row' : '';
+                        const tr = document.createElement('tr');
+                        tr.className = isCurrent;
+                        tr.innerHTML = `
+                            <td><strong>${idx + 1}</strong></td>
+                            <td class="text-left"><strong>${escapeHTML(p.name)}</strong></td>
+                            <td><span class="score-eagle">${p.eagle}</span></td>
+                            <td><span class="score-birdie">${p.birdie}</span></td>
+                            <td><span class="score-par">${p.par}</span></td>
+                            <td><span class="score-bogey">${p.bogey}</span></td>
+                            <td><span class="score-dbogey">${p.dbogey}</span></td>
+                            <td><span class="badge" style="background:var(--primary); color:white; font-size:12px;">${p.totalBE}</span></td>
+                        `;
+                        awardsTbody.appendChild(tr);
+                    });
+                }
+            }
+
+            // TABELLE: ECLECTIC POTENZIAL
+            const potTbody = document.getElementById('stats-potential-tbody');
+            if (potTbody) {
+                potTbody.innerHTML = '';
+                if (playerPotentials.length === 0) {
+                    potTbody.innerHTML = `<tr><td colspan="6" style="padding:16px; color:var(--text-muted);">Es müssen alle 18 Löcher mindestens 1x gespielt werden.</td></tr>`;
+                } else {
+                    playerPotentials.sort((a, b) => a.ecBrutto - b.ecBrutto);
+                    playerPotentials.forEach((p, idx) => {
+                        const isCurrent = p.id === appState.activePlayerId ? 'highlight-row' : '';
+                        const diffText = p.diffPar > 0 ? `+${p.diffPar}` : `${p.diffPar}`;
+                        const badgeColor = p.diffPar <= 0 ? 'background:#10b981;' : 'background:#0284c7;';
+                        
+                        const tr = document.createElement('tr');
+                        tr.className = isCurrent;
+                        tr.innerHTML = `
+                            <td><strong>${idx + 1}</strong></td>
+                            <td class="text-left"><strong>${escapeHTML(p.name)}</strong></td>
+                            <td>${p.totalPar}</td>
+                            <td><strong>${p.ecBrutto}</strong></td>
+                            <td><span class="badge" style="${badgeColor} color:white; font-weight:700;">${diffText}</span></td>
+                            <td>${p.roundsCount} Runden</td>
+                        `;
+                        potTbody.appendChild(tr);
+                    });
+                }
+            }
         }
 
         function renderMostImprovedTable() {
@@ -3677,7 +3990,6 @@
 
             const workbook = XLSX.utils.book_new();
 
-            /* TAB 1: LEADERBOARD */
             let exportData = [];
             let headerRow = ["Platz", "Spieler"];
             for (let i = start; i < end; i++) headerRow.push("Loch " + (i + 1));
