@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf V2.0 </title>
+    <title>Eclectic Golf V2.1</title>
 
     <!-- PWA Meta-Tags & Manifest -->
     <link rel="manifest" href="manifest.json">
@@ -2681,7 +2681,8 @@
             
             html += `<tr><td class="text-left"><strong>HCPI-Lochindex</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td>${escapeHTML(setup.hcpIndex[i] || 18)}</td>`;
+                // BUGFIX: Korrekter Vorgabe-Schlüssel (HCPI-Index 1 bis 18) pro Loch
+                html += `<td>${escapeHTML(setup.hcpIndex[i] || (i + 1))}</td>`;
             }
             html += `<td>-</td></tr>`;
             
@@ -3756,7 +3757,7 @@
             }
             html += `</tr><tr><td class="text-left"><strong>HCPI-Schwierigkeitsindex (1-18)</strong></td>`;
             for (let i = start; i < end; i++) {
-                html += `<td><input type="number" id="setup-hcpi-${i}" value="${escapeHTML(setup.hcpIndex[i] || 18)}" min="1" max="18" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
+                html += `<td><input type="number" id="setup-hcpi-${i}" value="${escapeHTML(setup.hcpIndex[i] || (i + 1))}" min="1" max="18" style="width:50px; text-align:center; padding:6px; border-radius:4px; border:1px solid var(--border); background: var(--input-bg); color: var(--text);"></td>`;
             }
             html += `</tr></tbody>`;
             table.innerHTML = html;
@@ -4008,7 +4009,7 @@
 
             let hcpiRow = ["-", "HCPI-Lochindex"];
             for (let i = start; i < end; i++) {
-                hcpiRow.push(setup.hcpIndex[i] || 18);
+                hcpiRow.push(setup.hcpIndex[i] || (i + 1));
             }
             hcpiRow.push("-");
             exportData.push(hcpiRow);
