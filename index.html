@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eclectic Golf 10.11.26</title>
+    <title>Golf-Turnier V 13.11.26</title>
 
     <!-- PWA Meta-Tags & Manifest -->
-    <link  rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -1333,7 +1333,7 @@
         
         <div class="header-bar">
             <div>
-                <h1 id="app-title">Golf-Turnierserie</h1>
+                <h1 id="app-title">Eclectic Golf-Turnierserie</h1>
                 <div class="sync-status">
                     <span class="sync-dot" id="sync-dot"></span>
                     <span>Aktiver Spieler: <strong id="current-player-display" style="color: var(--text);">-</strong></span>
@@ -1374,14 +1374,14 @@
             <button class="tab-btn" id="tab-setup" onclick="switchMainTab('setup')">⚙️ Platz-Setup (PAR/HCPI)</button>
         </div>
 
-        <!-- VIEW: Übersicht Start -->
+        <!-- VIEW: LEADERBOARD -->
         <div id="view-leaderboard" class="tab-content">
             <div class="card">
                 <h3 id="leaderboard-card-title">Gesamtstand aller Spieler im Vergleich</h3>
 
                 <div class="info-box">
                     ℹ️ <strong>Eclectic-Turnier:</strong> Es wird das jeweils beste Ergebnis eines Spielers an jedem Loch über alle absolvierten Runden gewertet. 
-                     <a href="https://github.com/wernerprim-ship-it/golf_manager/wiki/Home-Golf-Eclectic-Manager" target="_blank" rel="noopener"> ?</a>.
+                    Mehr Infos zum Spielformat findest du auf <a href="https://de.wikipedia.org/wiki/Eclectic" target="_blank" rel="noopener">Wikipedia: Eclectic</a>.
                 </div>
                 
                 <div class="sub-tabs">
@@ -1505,7 +1505,7 @@
         <!-- VIEW: STATS & SPECIAL AWARDS -->
         <div id="view-stats" class="tab-content hidden">
             <div class="card">
-                <h3>🌟 Runden-Highlights & Rekorde </h3>
+                <h3>🌟 Runden-Highlights & Rekorde des Turniers</h3>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">🥇</div>
@@ -1567,7 +1567,7 @@
             </div>
 
             <div class="card">
-                <h3>🏆 Eclectic-Potenzial (Traumrunde vs. Platz-PAR)</h3>
+                <h3>🏆 Eclectic-Potenzial (Erreichte Traumrunde vs. Platz-PAR)</h3>
                 <div class="info-box">
                     Zeigt den aktuellen Eclectic-Bestscore jedes Golfers im Vergleich zum offiziellen Platz-PAR (72) sowie die theoretische Gesamteinsparung an Schlägen.
                 </div>
@@ -1618,7 +1618,7 @@
         <!-- VIEW: HOLE DIFFICULTY ANALYSIS -->
         <div id="view-difficulty" class="tab-content hidden">
             <div class="card">
-                <h3>⛳ Schwierigkeitsanalyse (Rangliste aller 18 Löcher)</h3>
+                <h3>⛳ Loch-Schwierigkeitsanalyse (Rangliste aller 18 Löcher)</h3>
                 <div class="info-box">
                     Analysiert sämtliche eingetragenen Schläge aller Spieler im aktuellen Turnier, um die Löcher des Platzes von schwer (+über PAR) bis leicht zu sortieren.
                 </div>
@@ -1740,7 +1740,7 @@
             <div class="card">
                 <h3>Platzkonfiguration (Aktuelles Turnier)</h3>
                 <div class="info-box">
-                    Trage hier die offiziellen <strong>PAR-Werte</strong> sowie den Schwierigkeitsgrad (<strong>HCPI-Index / Vorgabe-Schlüssel 1 bis 18</strong>) für das aktiv gewählte Turnier ein.
+                    Tragen Sie hier die offiziellen <strong>PAR-Werte</strong> sowie den Schwierigkeitsgrad (<strong>HCPI-Index / Vorgabe-Schlüssel 1 bis 18</strong>) für das aktiv gewählte Turnier ein.
                 </div>
                 <div class="sub-tabs">
                     <button class="sub-tab-btn active" id="setup-sub-1" onclick="switchSubTab('setup', 'front')">Loch 1 - 9</button>
@@ -1762,7 +1762,7 @@
     <div id="delete-player-modal" class="modal-overlay hidden">
         <div class="modal-card">
             <h3>🚨 Spieler löschen</h3>
-            <p id="delete-player-modal-text">Möchtest Du diesen Spieler wirklich löschen?</p>
+            <p id="delete-player-modal-text">Möchten Sie diesen Spieler wirklich löschen?</p>
             <div class="modal-actions">
                 <button class="btn-modal-cancel" onclick="closeDeletePlayerModal()">Abbrechen</button>
                 <button class="btn-modal-confirm" id="btn-confirm-delete-player">Löschen</button>
@@ -1867,15 +1867,15 @@
         }
 
         const DEFAULT_COURSE_SETUP = {
-            par:      [4,  3, 4,  4, 5,  3,  4,  3, 4, 4, 5, 4,  3,  4,  4,  5,  4,  4],
-            hcpIndex: [7, 11, 5, 15, 3, 17,  1, 13, 9, 2, 8, 4, 18, 16, 12,  6, 14, 10]
+            par: [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 3, 4, 5, 4, 4, 3, 4, 4],
+            hcpIndex: [1, 18, 5, 14, 9, 10, 13, 2, 17, 4, 15, 8, 11, 12, 7, 3, 16, 6]
         };
 
         let appState = {
             tournaments: {
                 "t_default": {
                     id: "t_default",
-                    name: "Eclectic Saison 2027",
+                    name: "Eclectic Saison 2026",
                     courseSetup: JSON.parse(JSON.stringify(DEFAULT_COURSE_SETUP))
                 }
             },
@@ -1913,7 +1913,7 @@
                 appState.tournaments = {
                     "t_default": {
                         id: "t_default",
-                        name: "Eclectic Saison 2027",
+                        name: "Eclectic Saison 2026",
                         courseSetup: defaultSetup
                     }
                 };
